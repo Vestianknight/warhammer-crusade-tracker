@@ -10,6 +10,12 @@ body {
     color: #e0e0e0; /* Light text */
     line-height: 1.6;
     overflow-x: hidden; /* Prevent horizontal scrolling */
+    /* Subtle space background */
+    background-image: radial-gradient(circle at top left, #2a2a4a 0%, #1a1a2e 70%),
+                      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="rgba(255,255,255,0.05)"><circle cx="10" cy="10" r="1.5"/><circle cx="50" cy="30" r="0.8"/><circle cx="80" cy="60" r="1.2"/><circle cx="30" cy="90" r="0.5"/><circle cx="70" cy="15" r="1.0"/></svg>');
+    background-size: cover, 100px 100px;
+    background-repeat: no-repeat, repeat;
+    background-attachment: fixed;
 }
 
 .main-content {
@@ -212,18 +218,16 @@ body {
     width: 100%;
     transform-origin: bottom;
     transition: height 0.5s ease-out;
-    /* Adjusted opacity for more planet visibility */
-    opacity: 0.5; /* Original was 0.7, now lighter */
+    opacity: 0.5; /* Adjusted opacity for more planet visibility */
 }
 
-/* Planet Info on Hover (for mobile/smaller screens) - now repurposed for all-planets view */
+/* Planet Info - Always visible, no hover effect */
 .planet-info-hover {
-    /* This will be the name and short description in the initial all-planets view */
     color: #e0e0e0;
     text-align: center;
     padding: 0.5rem;
     box-sizing: border-box;
-    transition: opacity 0.3s ease;
+    /* Removed opacity/visibility transitions as it's always visible now */
 }
 
 .planet-info-hover h3 {

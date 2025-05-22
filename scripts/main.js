@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // IMPORTANT: This is a client-side password and is NOT secure.
     // Anyone can view the source code to find it.
     // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "1234"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             planetImage.src = planet.image || `images/planet1.png`; // Placeholder if image not found
             planetImage.alt = planet.name;
 
-            // Percentage Overlay - Adjusted opacity in CSS for more planet visibility
+            // Percentage Overlay - Opacity adjusted in CSS for more planet visibility
             const totalPercentage = planet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0);
             let currentHeight = 0;
             planet.factions_control.forEach(fc => {
@@ -191,9 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
             planetImageContainer.appendChild(planetImage);
             planetCard.appendChild(planetImageContainer);
 
-            // Short info for initial all-planets view
+            // Short info for initial all-planets view (always visible now)
             const planetInfoShort = document.createElement('div');
-            planetInfoShort.classList.add('planet-info-hover');
+            planetInfoShort.classList.add('planet-info-hover'); // Reusing class name, but CSS handles always-visible
             planetInfoShort.innerHTML = `
                 <h3>${planet.name}</h3>
                 <p>${planet.description.substring(0, 50)}...</p>
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Open data/planets.json
             // 2. Find the planet the ship is associated with.
             // 3. Update "ship_location": "planet_id" to the ID of the planet you want the ship to appear next to.
-            //    Set to null to make it appear next to its own planet card.
+            //    Set to null to make it appear next to its own planet card (default right corner).
             // 4. Update "ship_reason": "Your battle description here."
             // 5. Save, commit, and push changes to GitHub.
             const shipImage = document.createElement('img');
