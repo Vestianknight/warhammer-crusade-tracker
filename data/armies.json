@@ -45,9 +45,9 @@
   },
   {
     "id": "adeptus-custodes",
-    "name": "Adeptus Custodes (Gabe Gutierrez)",
+    "name": "Adeptus Custodes (Chris Evans)",
     "faction": "Imperium",
-    "player": "Gabe Gutierrez",
+    "player": "Chris Evans",
     "description": "The Ten Thousand, the Emperor's personal guard, clad in auramite and wielding the finest weaponry. Each Custodian is a demigod of war, a living work of art and destruction. They are few in number but unmatched in skill and might.",
     "crusade_points": 120,
     "battles_played": 3,
@@ -64,5 +64,49 @@
     "battles_played": 5,
     "victories": 3,
     "notes": "A vanguard fleet has been detected, consuming outer system worlds rapidly."
+  },
+  {
+    "id": "astra-militarum",
+    "name": "Astra Militarum (Alex Turner)",
+    "faction": "Imperium",
+    "player": "Alex Turner",
+    "description": "The backbone of the Imperium's military might, countless regiments of brave human soldiers. Though individually mortal, their sheer numbers and unwavering faith make them a formidable force, supported by tanks and artillery.",
+    "crusade_points": 90,
+    "battles_played": 7,
+    "victories": 4,
+    "notes": "Holding the line against encroaching xenos forces on the western front."
+  },
+  {
+    "id": "chaos-space-marines",
+    "name": "Chaos Space Marines (Ben Carter)",
+    "faction": "Chaos",
+    "player": "Ben Carter",
+    "description": "Heretic Astartes, traitors who turned from the Emperor's light to serve the Ruinous Powers. Driven by dark pacts and ancient hatreds, they unleash unholy war on the galaxy, seeking to burn it all down.",
+    "crusade_points": 115,
+    "battles_played": 6,
+    "victories": 4,
+    "notes": "Performing dark rituals to summon daemonic allies for the next assault."
+  },
+  {
+    "id": "necrons",
+    "name": "Necron Dynasty (Chloe Davis)",
+    "faction": "Xenos",
+    "player": "Chloe Davis",
+    "description": "Ancient robotic beings, awakened from millennia of slumber to reclaim their galactic empire. Their armies are unfeeling machines, relentless and nigh-indestructible, wielding gauss weaponry that strips matter at a molecular level.",
+    "crusade_points": 108,
+    "battles_played": 4,
+    "victories": 3,
+    "notes": "Tomb worlds are stirring, and strange energy readings emanate from deep space."
+  },
+  {
+    "id": "tau-empire",
+    "name": "T'au Empire (David Miller)",
+    "faction": "Xenos",
+    "player": "David Miller",
+    "description": "A young, technologically advanced xenos empire united under the philosophy of the 'Greater Good'. They seek to expand their dominion through diplomacy or overwhelming firepower, utilizing advanced battlesuits and pulse weaponry.",
+    "crusade_points": 98,
+    "battles_played": 5,
+    "victories": 3,
+    "notes": "Establishing new forward operating bases, seeking to integrate new species."
   }
 ]

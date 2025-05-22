@@ -6,16 +6,11 @@ body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #1a1a2e; /* Dark background */
-    color: #e0e0e0; /* Light text */
+    background-color: #1a1a2e; /* Dark background for the whole page */
+    color: #e0e0e0; /* Light text for general content */
     line-height: 1.6;
     overflow-x: hidden; /* Prevent horizontal scrolling */
-    /* Subtle space background */
-    background-image: radial-gradient(circle at top left, #2a2a4a 0%, #1a1a2e 70%),
-                      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="rgba(255,255,255,0.05)"><circle cx="10" cy="10" r="1.5"/><circle cx="50" cy="30" r="0.8"/><circle cx="80" cy="60" r="1.2"/><circle cx="30" cy="90" r="0.5"/><circle cx="70" cy="15" r="1.0"/></svg>');
-    background-size: cover, 100px 100px;
-    background-repeat: no-repeat, repeat;
-    background-attachment: fixed;
+    /* Removed subtle space background from body */
 }
 
 .main-content {
@@ -156,11 +151,20 @@ body {
     min-height: 300px; /* Ensure some height for the container */
     transition: all 0.5s ease-in-out; /* Smooth transition for layout changes */
     position: relative; /* For absolute positioning of back button */
+    /* Space background for the planet section */
+    background-image: radial-gradient(circle at top left, #2a2a4a 0%, #1a1a2e 70%),
+                      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="rgba(255,255,255,0.05)"><circle cx="10" cy="10" r="1.5"/><circle cx="50" cy="30" r="0.8"/><circle cx="80" cy="60" r="1.2"/><circle cx="30" cy="90" r="0.5"/><circle cx="70" cy="15" r="1.0"/></svg>');
+    background-size: cover, 100px 100px;
+    background-repeat: no-repeat, repeat;
+    background-attachment: scroll; /* Scroll with the container */
+    border-radius: 10px; /* Match section border radius */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Match section shadow */
 }
 
 /* Planet Card */
 .planet-card {
-    background-color: #3e3e60;
+    background-color: rgba(0, 0, 0, 0.2); /* Transparent background for the card */
+    border: 1px solid rgba(15, 52, 96, 0.5); /* Subtle border */
     padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -172,7 +176,7 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer; /* Indicate clickable */
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, filter 0.5s ease-in-out, background-color 0.5s ease; /* For active/inactive states */
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, filter 0.5s ease-in-out, background-color 0.5s ease, box-shadow 0.5s ease; /* Smooth transition for layout changes */
     width: 200px; /* Fixed width for initial view */
     height: 250px; /* Fixed height for initial view */
     flex-shrink: 0; /* Prevent shrinking in flex container */
@@ -181,6 +185,7 @@ body {
 
 .planet-card:hover {
     transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 5px 15px rgba(233, 69, 96, 0.2); /* Subtle glow on hover */
 }
 
 /* Styles for when a planet is clicked (single view) */
@@ -195,7 +200,7 @@ body {
     flex-direction: row; /* Layout content horizontally */
     align-items: flex-start;
     padding: 2rem;
-    background-color: #2a2a4a; /* Darker background for active card */
+    background-color: #2a2a4a; /* Darker background for active card (not transparent) */
     box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5); /* Stronger glow */
     z-index: 10; /* Bring active card to front */
 }
@@ -254,7 +259,7 @@ body {
 
 /* Planet Info - Always visible (name & short description) */
 .planet-info-short { /* Renamed for clarity */
-    color: #e0e0e0;
+    color: #e0e0e0; /* White text */
     text-align: center;
     padding: 0.5rem;
     box-sizing: border-box;
@@ -264,14 +269,14 @@ body {
 .planet-info-short h3 {
     margin-top: 0;
     margin-bottom: 0.2rem;
-    color: #e94560;
+    color: #e94560; /* Accent color for name */
     font-size: 1.2rem;
 }
 
 .planet-info-short p {
     font-size: 0.85rem;
     margin-bottom: 0;
-    color: #c0c0c0;
+    color: #c0c0c0; /* Light grey for description */
 }
 
 /* Detailed Planet Info (appears on click) */
@@ -289,14 +294,14 @@ body {
 
 .planet-detail-content-in-card h3 {
     font-size: 2.2rem;
-    color: #e94560;
+    color: #e94560; /* Accent color for name */
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
 
 .planet-detail-content-in-card p {
     font-size: 1.1rem;
-    color: #c0c0c0;
+    color: #e0e0e0; /* White text */
     max-width: 600px;
     margin: 0 0 0.5rem 0; /* Adjust margin for text */
 }
@@ -307,7 +312,7 @@ body {
 }
 
 .planet-detail-content-in-card .control-info h4 {
-    color: #e94560;
+    color: #e94560; /* Accent color */
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-size: 1.2rem;
@@ -316,6 +321,7 @@ body {
 .planet-detail-content-in-card .control-info p {
     margin: 0.2rem 0;
     font-size: 1rem;
+    color: #e0e0e0; /* White text */
 }
 
 .planet-detail-content-in-card .battle-info {
@@ -328,7 +334,7 @@ body {
 }
 
 .planet-detail-content-in-card .battle-info h4 {
-    color: #0f3460;
+    color: #0f3460; /* Darker accent */
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-size: 1.3rem;
@@ -337,6 +343,7 @@ body {
 .planet-detail-content-in-card .battle-info p {
     font-size: 1rem;
     margin: 0;
+    color: #e0e0e0; /* White text */
 }
 
 
@@ -385,7 +392,7 @@ body {
 }
 
 .dropdown {
-    padding: 0.6rem 1rem;
+    padding: 0.6rem 1.5rem;
     border-radius: 5px;
     border: 1px solid #0f3460;
     background-color: #1a1a2e;

@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Global Data Variables (Accessible to all functions below) ---
+    // Declared here so they are accessible to showPlanetDetail, showAllPlanets, etc.
+    let factionsData = [];
+    let armiesData = [];
+    let planetsData = [];
+
     // --- Password Protection ---
     const passwordOverlay = document.getElementById('password-overlay');
     const passwordInput = document.getElementById('password-input');
@@ -33,11 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initializeCrusadeTracker() {
         console.log("Crusade Tracker Initialized!");
 
-        // --- Data Loading ---
-        let factionsData = [];
-        let armiesData = [];
-        let planetsData = [];
-
         try {
             const [factionsRes, armiesRes, planetsRes] = await Promise.all([
                 fetch('data/factions.json'),
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('data/planets.json')
             ]);
 
+            // Assign to the already declared variables
             factionsData = await factionsRes.json();
             armiesData = await armiesRes.json();
             planetsData = await planetsRes.json();
