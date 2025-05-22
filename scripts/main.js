@@ -1,20 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Global Data Variables (Accessible to all functions below) ---
-    // Declared here so they are accessible to showPlanetDetail, showAllPlanets, etc.
     let factionsData = [];
     let armiesData = [];
     let planetsData = [];
 
-    // --- Password Protection ---
+    // --- DOM Elements for Sections ---
     const passwordOverlay = document.getElementById('password-overlay');
+    const mainContent = document.getElementById('main-content');
+    const factionProgressSection = document.getElementById('faction-progress-section');
+    const armyRosterSection = document.getElementById('army-roster-section');
+    const planetaryControlSection = document.getElementById('planetary-control-section');
+    const resourcesSection = document.getElementById('resources-section');
+
+    const armyListOverview = document.getElementById('army-list-overview'); // This will hold the army cards
+    const armyDetailPageContainer = document.getElementById('army-detail-page-container');
+    const armyDetailContent = document.getElementById('army-detail-content');
+    const backToRosterBtn = document.getElementById('back-to-roster-btn');
+
+    // --- Password Protection ---
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
-    const mainContent = document.getElementById('main-content');
-
-    // IMPORTANT: This is a client-side password and is NOT secure.
-    // Anyone can view the source code to find it.
-    // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "1234"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -35,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Main Application Initialization ---
-    // This function runs ONLY after the correct password is entered.
     async function initializeCrusadeTracker() {
         console.log("Crusade Tracker Initialized!");
 
@@ -46,26 +51,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('data/planets.json')
             ]);
 
-            // Assign to the already declared variables
             factionsData = await factionsRes.json();
             armiesData = await armiesRes.json();
             planetsData = await planetsRes.json();
 
             console.log('Data loaded:', { factionsData, armiesData, planetsData });
 
-            // --- Render Components ---
-            // Pass both factionsData and armiesData to renderFactionChart
+            // Initial render of components
             renderFactionChart(factionsData, armiesData);
-            renderArmyList(armiesData);
-            renderPlanets(planetsData); // Initial render of all planets
-            setupArmyOverview(armiesData);
+            renderPlanets(planetsData);
+
+            // Set up hash-based routing
+            window.addEventListener('hashchange', router);
+            router(); // Call router once on load to handle initial URL
 
         } catch (error) {
             console.error('Error loading data:', error);
-            // Display a user-friendly error message on the page
             mainContent.innerHTML = `<p style="color: red; text-align: center;">
                                         Failed to load campaign data. Please check the data files and try again.
                                     </p>`;
+        }
+    }
+
+    // --- Router Function ---
+    function router() {
+        const hash = window.location.hash;
+        console.log('Current hash:', hash);
+
+        // Hide all main sections by default
+        factionProgressSection.classList.add('hidden');
+        armyRosterSection.classList.add('hidden');
+        planetaryControlSection.classList.add('hidden');
+        resourcesSection.classList.add('hidden');
+
+        // Reset army detail view state
+        armyListOverview.classList.remove('hidden');
+        armyDetailPageContainer.classList.add('hidden');
+        armyDetailContent.innerHTML = ''; // Clear previous detail content
+
+        if (hash.startsWith('#army-')) {
+            const armyId = hash.substring(6); // Remove '#army-' prefix
+            renderArmyDetailPage(armyId);
+            armyRosterSection.classList.remove('hidden'); // Show the army section
+        } else {
+            // Default view: show all main sections
+            factionProgressSection.classList.remove('hidden');
+            armyRosterSection.classList.remove('hidden');
+            planetaryControlSection.classList.remove('hidden');
+            resourcesSection.classList.remove('hidden');
+            renderArmyListOverview(armiesData); // Render the main army list overview
         }
     }
 
@@ -83,27 +117,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Faction Progress Stacked Bar Graph ---
-    // Now takes both factions and armies data
     function renderFactionChart(factions, armies) {
         const ctx = document.getElementById('factionBarChart').getContext('2d');
 
-        // Map faction names to their index for dataset data array
         const factionLabels = factions.map(f => f.name);
         const factionIndexMap = new Map(factionLabels.map((name, index) => [name, index]));
 
         const datasets = [];
-        const armyColors = new Map(); // To store colors for each army for consistency
+        const armyColors = new Map();
 
-        // Group armies by faction and prepare datasets
         armies.forEach(army => {
-            // Assign a consistent color to each army
             if (!armyColors.has(army.id)) {
                 armyColors.set(army.id, getNextColor());
             }
             const armyColor = armyColors.get(army.id);
 
-            // Create a data array for this army's contribution
-            // It will have a value only for its own faction's column, 0 for others
             const data = new Array(factionLabels.length).fill(0);
             const factionIndex = factionIndexMap.get(army.faction);
             if (factionIndex !== undefined) {
@@ -111,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             datasets.push({
-                label: army.name, // Label for the legend (e.g., "Ultramarines (John Doe)")
+                label: army.name,
                 data: data,
                 backgroundColor: armyColor,
                 borderColor: armyColor,
@@ -119,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Destroy existing chart instance if it exists to prevent conflicts
         if (Chart.getChart(ctx)) {
             Chart.getChart(ctx).destroy();
         }
@@ -127,59 +154,66 @@ document.addEventListener('DOMContentLoaded', () => {
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: factionLabels, // Faction names on the X-axis
-                datasets: datasets // Each army is a dataset
+                labels: factionLabels,
+                datasets: datasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
                     x: {
-                        stacked: true, // Crucial for stacked bars
+                        stacked: true,
                         ticks: {
-                            color: '#e0e0e0' // X-axis label color
+                            color: '#e0e0e0'
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' // Grid line color
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     },
                     y: {
-                        stacked: true, // Crucial for stacked bars
+                        stacked: true,
                         beginAtZero: true,
-                        max: 400, // Adjust max score as needed for your campaign's total points per faction
+                        max: 400,
                         ticks: {
-                            color: '#e0e0e0' // Y-axis label color
+                            color: '#e0e0e0'
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' // Grid line color
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     }
                 },
                 plugins: {
                     legend: {
                         labels: {
-                            color: '#e0e0e0', // Legend text color
-                            boxWidth: 20, // Size of the color box next to legend item
-                            padding: 10 // Padding between legend items
+                            color: '#e0e0e0',
+                            boxWidth: 20,
+                            padding: 10
                         }
                     },
                     tooltip: {
                         mode: 'index',
-                        intersect: false, // Show all items in stack on hover
+                        intersect: false,
                         callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y + ' Crusade Points';
-                                }
-                                return label;
-                            },
                             title: function(context) {
-                                // Display the faction name at the top of the tooltip
-                                return context[0].label;
+                                if (context.length > 0) {
+                                    return context[0].label;
+                                }
+                                return '';
+                            },
+                            label: function(context) {
+                                const hoveredFaction = context.label;
+                                const armyName = context.dataset.label;
+                                const army = armies.find(a => a.name === armyName && a.faction === hoveredFaction);
+                                if (army) {
+                                    return `${army.name}: ${army.crusade_points} Crusade Points`;
+                                }
+                                return '';
+                            },
+                            filter: function(tooltipItem) {
+                                const hoveredFaction = tooltipItem.label;
+                                const armyName = tooltipItem.dataset.label;
+                                const army = armies.find(a => a.name === armyName && a.faction === hoveredFaction);
+                                return !!army;
                             }
                         }
                     }
@@ -188,10 +222,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Participating Armies List ---
-    function renderArmyList(armies) {
-        const armyListContainer = document.getElementById('army-list');
-        armyListContainer.innerHTML = ''; // Clear previous content
+    // --- Army List Overview (main page) ---
+    function renderArmyListOverview(armies) {
+        armyListOverview.innerHTML = ''; // Clear previous content
+        armyListOverview.classList.remove('hidden'); // Ensure visible
+        armyDetailPageContainer.classList.add('hidden'); // Ensure detail page is hidden
 
         armies.forEach(army => {
             const armyCard = document.createElement('div');
@@ -199,12 +234,44 @@ document.addEventListener('DOMContentLoaded', () => {
             armyCard.innerHTML = `
                 <h3>${army.name}</h3>
                 <p><strong>Faction:</strong> ${army.faction}</p>
-                <p>${army.description.substring(0, 150)}...</p>
-                <p><strong>Player:</strong> ${army.player}</p>
+                <p>${army.description.substring(0, 100)}...</p>
+                <button class="view-button" data-army-id="${army.id}">View Details</button>
             `;
-            armyListContainer.appendChild(armyCard);
+            armyCard.querySelector('.view-button').addEventListener('click', (e) => {
+                const armyId = e.target.dataset.armyId;
+                window.location.hash = `#army-${armyId}`; // Change URL hash to trigger router
+            });
+            armyListOverview.appendChild(armyCard);
         });
     }
+
+    // --- Army Detail Page ---
+    function renderArmyDetailPage(armyId) {
+        const army = armiesData.find(a => a.id === armyId);
+        if (!army) {
+            armyDetailContent.innerHTML = `<p style="color: red;">Army not found!</p>`;
+            return;
+        }
+
+        armyListOverview.classList.add('hidden'); // Hide the overview list
+        armyDetailPageContainer.classList.remove('hidden'); // Show the detail container
+
+        armyDetailContent.innerHTML = `
+            <h3>${army.name}</h3>
+            <p><strong>Player:</strong> ${army.player}</p>
+            <p><strong>Faction:</strong> ${army.faction}</p>
+            <p><strong>Description:</strong> ${army.description}</p>
+            <p><strong>Crusade Points:</strong> ${army.crusade_points}</p>
+            <p><strong>Battles Played:</strong> ${army.battles_played}</p>
+            <p><strong>Victories:</strong> ${army.victories}</p>
+            <p><strong>Notes:</strong> ${army.notes || 'N/A'}</p>
+        `;
+
+        backToRosterBtn.addEventListener('click', () => {
+            window.location.hash = ''; // Go back to the main view (empty hash)
+        }, { once: true }); // Ensure listener is only active once
+    }
+
 
     // --- Planetary Control (Planets & Ships) ---
     const planetsContainer = document.getElementById('planets-container');
@@ -406,44 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (detailContentDiv) {
                 detailContentDiv.classList.add('hidden');
                 detailContentDiv.innerHTML = ''; // Clear content
-            }
-        });
-    }
-
-
-    // --- Army Roster Overview with Dropdown ---
-    function setupArmyOverview(armies) {
-        const armySelect = document.getElementById('army-select');
-        const selectedArmyDetails = document.getElementById('selected-army-details');
-
-        // Populate dropdown
-        armies.forEach(army => {
-            const option = document.createElement('option');
-            option.value = army.id;
-            option.textContent = army.name;
-            armySelect.appendChild(option);
-        });
-
-        // Event listener for dropdown change
-        armySelect.addEventListener('change', (e) => {
-            const selectedArmyId = e.target.value;
-            if (selectedArmyId) {
-                const army = armies.find(a => a.id === selectedArmyId);
-                if (army) {
-                    selectedArmyDetails.innerHTML = `
-                        <h3>${army.name}</h3>
-                        <p><strong>Player:</strong> ${army.player}</p>
-                        <p><strong>Faction:</strong> ${army.faction}</p>
-                        <p><strong>Description:</strong> ${army.description}</p>
-                        <p><strong>Crusade Points:</strong> ${army.crusade_points}</p>
-                        <p><strong>Battles Played:</strong> ${army.battles_played}</p>
-                        <p><strong>Victories:</strong> ${army.victories}</p>
-                        <p><strong>Notes:</strong> ${army.notes || 'N/A'}</p>
-                    `;
-                    selectedArmyDetails.classList.remove('hidden');
-                }
-            } else {
-                selectedArmyDetails.classList.add('hidden');
             }
         });
     }

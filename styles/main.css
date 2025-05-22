@@ -107,38 +107,93 @@ body {
     margin: 0 auto;
 }
 
-/* Grid Layout for Armies */
+/* Grid Layout for General Use (e.g., Army Overview Cards) */
 .grid-container {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
 }
 
-/* Army List Card */
-.army-card {
+/* Army List Overview Card (used for all armies in the main roster) */
+.army-list-overview .army-card {
     background-color: #3e3e60;
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
     transition: transform 0.2s ease;
+    cursor: pointer; /* Indicate clickable */
 }
 
-.army-card:hover {
+.army-list-overview .army-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(233, 69, 96, 0.2); /* Subtle glow on hover */
 }
 
-.army-card h3 {
+.army-list-overview .army-card h3 {
     color: #e94560;
     font-size: 1.4rem;
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
 
-.army-card p {
+.army-list-overview .army-card p {
     font-size: 0.9rem;
     color: #c0c0c0;
+    margin-bottom: 0.5rem;
 }
+
+.army-list-overview .army-card .view-button {
+    background-color: #0f3460;
+    color: #e0e0e0;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-top: 1rem;
+}
+
+.army-list-overview .army-card .view-button:hover {
+    background-color: #164a80;
+}
+
+/* Army Detail Page Container */
+.army-detail-page-container {
+    background-color: #3e3e60;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.army-detail-page-container #army-detail-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: left;
+}
+
+.army-detail-page-container #army-detail-content h3 {
+    font-size: 2.2rem;
+    color: #e94560;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.army-detail-page-container #army-detail-content p {
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    margin-bottom: 0.5rem;
+}
+
+.army-detail-page-container #army-detail-content p strong {
+    color: #e0e0e0;
+}
+
 
 /* Planetary Control Container */
 .planets-container {
@@ -379,7 +434,7 @@ body {
 }
 
 
-/* Army Overview Dropdown */
+/* Army Overview Dropdown (now part of the main army roster section) */
 .army-overview-controls {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -404,9 +459,9 @@ body {
     margin-top: 0.5rem; /* Space from label on mobile */
 }
 
-/* Selected Army Details Card */
-.army-details-card {
-    background-color: #3e3e60;
+/* Selected Army Details Card (now part of the army detail page) */
+.army-details-card { /* This class is now used for the detail content within the army detail page */
+    background-color: #3e3e60; /* This will be overridden by .army-detail-page-container */
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -553,15 +608,10 @@ body {
         font-size: 1.2rem;
     }
 
-    .army-overview-controls {
-        display: flex;
+    .army-detail-page-container #army-detail-content {
+        flex-direction: row;
         justify-content: center;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .dropdown {
-        width: auto;
-        margin-top: 0;
+        align-items: flex-start;
+        text-align: left;
     }
 }

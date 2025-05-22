@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-initial-scale=1.0">
     <title>Warhammer 40k Crusade Tracker</title>
     <base href="/warhammer-crusade-tracker/">
 
@@ -35,39 +35,31 @@
             </p>
         </header>
 
-        <section class="section">
+        <section id="faction-progress-section" class="section">
             <h2>Faction Progress</h2>
             <div class="chart-container">
                 <canvas id="factionBarChart"></canvas>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Participating Armies</h2>
-            <div id="army-list" class="army-list grid-container">
+        <section id="army-roster-section" class="section">
+            <h2>Army Roster</h2>
+            <div id="army-list-overview" class="army-list-overview grid-container">
                 </div>
+            <div id="army-detail-page-container" class="army-detail-page-container hidden">
+                <button id="back-to-roster-btn" class="button back-button">Back to All Armies</button>
+                <div id="army-detail-content"></div>
+            </div>
         </section>
 
-        <section class="section">
+        <section id="planetary-control-section" class="section">
             <h2>Planetary Control</h2>
             <p class="sub-text">Click a planet for details.</p>
             <div id="planets-container" class="planets-container">
                 </div>
-            </section>
-
-        <section class="section">
-            <h2>Army Roster Overview</h2>
-            <div class="army-overview-controls">
-                <label for="army-select">Select an Army:</label>
-                <select id="army-select" class="dropdown">
-                    <option value="">-- Select an Army --</option>
-                    </select>
-            </div>
-            <div id="selected-army-details" class="army-details-card hidden">
-                </div>
         </section>
 
-        <section class="section">
+        <section id="resources-section" class="section">
             <h2>Useful Resources</h2>
             <p>
                 For more Warhammer 40k Crusade resources and rules, check out
