@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warhammer 40k Crusade tracker</title>
+    <link rel="stylesheet" href="/vestianknight.github.io/warhammer-crusade-tracker/styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- WHY IS THIS HERE? -->
+    <div id="password-overlay" class="password-overlay">
+        <div class="password-modal">
+            <h2>Access Crusade Tracker</h2>
+            <p>Please enter the campaign password:</p>
+            <input type="password" id="password-input" placeholder="Enter password">
+            <button id="password-submit">Enter</button>
+            <p class="password-warning">
+                Note: This is a client-side password for casual privacy.
+                For stronger security, a server-side solution would be needed.
+            </p>
+        </div>
+    </div>
+
+    <div id="main-content" class="main-content">
+        <header class="header">
+            <h1>Warhammer 40k Crusade: The <span class="campaign-name">Galactic Gauntlet</span></h1>
+            <p class="intro-text">
+                Welcome, commanders, to the Galactic Gauntlet Crusade! This tracker will help us monitor
+                the ebb and flow of war across the sector. Witness the might of your forces and the
+                struggle for dominance over vital worlds. Glory awaits!
+            </p>
+        </header>
+
+        <section class="section">
+            <h2>Faction Progress</h2>
+            <div class="chart-container">
+                <canvas id="factionBarChart"></canvas>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Participating Armies</h2>
+            <div id="army-list" class="army-list grid-container">
+                </div>
+        </section>
+
+        <section class="section">
+            <h2>Planetary Control</h2>
+            <p class="sub-text">Hover over a planet for details. Admin: Drag ships to indicate battles.</p>
+            <div id="planets-container" class="planets-container grid-container">
+                </div>
+            <div class="admin-controls">
+                <button id="toggle-admin-mode" class="button">Toggle Admin Mode</button>
+                <div id="admin-ship-info" class="admin-ship-info hidden">
+                    <input type="text" id="ship-reason-input" placeholder="Reason for battle (e.g., 'John vs Mike for Terra Nova')">
+                    <button id="save-ship-reason" class="button">Save Ship Reason</button>
+                    <p>Drag the ship image to a planet. The reason will be saved for the *last dragged* ship.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Army Roster Overview</h2>
+            <div class="army-overview-controls">
+                <label for="army-select">Select an Army:</label>
+                <select id="army-select" class="dropdown">
+                    <option value="">-- Select an Army --</option>
+                    </select>
+            </div>
+            <div id="selected-army-details" class="army-details-card hidden">
+                </div>
+        </section>
+
+        <section class="section">
+            <h2>Useful Resources</h2>
+            <p>
+                For more Warhammer 40k Crusade resources and rules, check out
+                <a href="https://administration.goonhammer.com/" target="_blank" rel="noopener noreferrer">Goonhammer Administration</a>.
+            </p>
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2025 Warhammer 40k Crusade Tracker. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="/vestianknight.github.io/warhammer-crusade-tracker/scripts/main.js"></script>
+</body>
+</html>
