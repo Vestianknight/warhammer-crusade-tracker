@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Password Protection ---
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
-    const CORRECT_PASSWORD = "1234"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -37,6 +37,48 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             alert("Incorrect password. Access denied."); // Using alert for simplicity, but for production, use a custom modal.
             passwordInput.value = ''; // Clear input
+        }
+    }
+
+    // --- Helper for generating consistent colors for armies ---
+    const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#C9CBCF', '#6A8B82', '#E6B0AA', '#D2B4DE', '#A9CCE3', '#FADBD8'
+    ];
+    let colorIndex = 0;
+    function getNextColor() {
+        const color = colors[colorIndex % colors.length];
+        colorIndex++;
+        return color;
+    }
+
+    // --- Router Function (MOVED HERE TO BE DEFINED BEFORE initializeCrusadeTracker CALLS IT) ---
+    function router() {
+        const hash = window.location.hash;
+        console.log('Current hash:', hash);
+
+        // Hide all main sections by default
+        factionProgressSection.classList.add('hidden');
+        armyRosterSection.classList.add('hidden');
+        planetaryControlSection.classList.add('hidden');
+        resourcesSection.classList.add('hidden');
+
+        // Reset army detail view state
+        armyListOverview.classList.remove('hidden');
+        armyDetailPageContainer.classList.add('hidden');
+        armyDetailContent.innerHTML = ''; // Clear previous detail content
+
+        if (hash.startsWith('#army-')) {
+            const armyId = hash.substring(6); // Remove '#army-' prefix
+            renderArmyDetailPage(armyId);
+            armyRosterSection.classList.remove('hidden'); // Show the army section
+        } else {
+            // Default view: show all main sections
+            factionProgressSection.classList.remove('hidden');
+            armyRosterSection.classList.remove('hidden');
+            planetaryControlSection.classList.remove('hidden');
+            resourcesSection.classList.remove('hidden');
+            renderArmyListOverview(armiesData); // Render the main army list overview
         }
     }
 
@@ -60,8 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Initial render of components
             renderFactionChart(factionsData, armiesData);
             renderPlanets(planetsData); // Planets need armiesData to place ships
-            // renderPlanets needs to be called after armiesData is loaded
-            // so we can pass it or make armiesData global (which it is now)
 
             // Set up hash-based routing
             window.addEventListener('hashchange', router);
@@ -73,18 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                         Failed to load campaign data. Please check the data files and try again.
                                     </p>`;
         }
-    }
-
-    // --- Helper for generating consistent colors for armies ---
-    const colors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-        '#C9CBCF', '#6A8B82', '#E6B0AA', '#D2B4DE', '#A9CCE3', '#FADBD8'
-    ];
-    let colorIndex = 0;
-    function getNextColor() {
-        const color = colors[colorIndex % colors.length];
-        colorIndex++;
-        return color;
     }
 
 
@@ -206,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             armyCard.innerHTML = `
                 <div class="army-card-header">
                     <h3>${army.name}</h3>
-                    <img src="${army.ship_image}" alt="${army.name} Ship" class="army-card-ship-image">
+                    ${army.ship_image ? `<img src="${army.ship_image}" alt="${army.name} Ship" class="army-card-ship-image">` : ''}
                 </div>
                 <p><strong>Faction:</strong> ${army.faction}</p>
                 <p>${army.description.substring(0, 100)}...</p>
@@ -232,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         armyDetailPageContainer.classList.remove('hidden'); // Show the detail container
 
         armyDetailContent.innerHTML = `
-            <img src="${army.ship_image}" alt="${army.name} Ship" class="army-detail-ship-image">
+            ${army.ship_image ? `<img src="${army.ship_image}" alt="${army.name} Ship" class="army-detail-ship-image">` : ''}
             <h3>${army.name}</h3>
             <p><strong>Player:</strong> ${army.player}</p>
             <p><strong>Faction:</strong> ${army.faction}</p>
