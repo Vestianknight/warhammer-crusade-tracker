@@ -94,6 +94,10 @@ body {
     transform: translateY(0);
 }
 
+.back-button {
+    margin-bottom: 2rem;
+}
+
 /* Chart Container */
 .chart-container {
     position: relative;
@@ -148,6 +152,25 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    cursor: pointer; /* Indicate clickable */
+    transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease; /* For active/inactive states */
+}
+
+.planet-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Styles for when a planet is clicked */
+.planets-container.single-view .planet-card.inactive {
+    opacity: 0.2;
+    transform: scale(0.8);
+    filter: blur(2px);
+    pointer-events: none; /* Make inactive planets unclickable */
+}
+
+.planets-container.single-view .planet-card.active {
+    transform: scale(1.1); /* Slightly enlarge the active planet */
+    box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4); /* Glowing effect */
 }
 
 .planet-image-container {
@@ -189,44 +212,31 @@ body {
     width: 100%;
     transform-origin: bottom;
     transition: height 0.5s ease-out;
+    /* Adjusted opacity for more planet visibility */
+    opacity: 0.5; /* Original was 0.7, now lighter */
 }
 
+/* Planet Info on Hover (for mobile/smaller screens) - now repurposed for all-planets view */
 .planet-info-hover {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
+    /* This will be the name and short description in the initial all-planets view */
     color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: border-box;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    border-radius: 50%; /* Match planet shape */
     text-align: center;
-}
-
-.planet-card:hover .planet-info-hover {
-    opacity: 1;
-    visibility: visible;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    transition: opacity 0.3s ease;
 }
 
 .planet-info-hover h3 {
     margin-top: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
     color: #e94560;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 .planet-info-hover p {
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    margin-bottom: 0;
+    color: #c0c0c0;
 }
 
 /* Ship Image */
@@ -236,51 +246,78 @@ body {
     position: absolute;
     top: 10px; /* Initial position, will be moved by JS */
     right: 10px;
-    cursor: grab;
-    transition: all 0.3s ease; /* Smooth transition for movement */
     z-index: 10; /* Ensure ship is on top */
     filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
 }
 
-.ship-image.dragging {
-    cursor: grabbing;
-    opacity: 0.8;
-}
-
-.ship-image.admin-mode {
-    cursor: grab;
-}
-
-/* Admin Controls */
-.admin-controls {
-    text-align: center;
-    margin-top: 2rem;
-}
-
-.admin-ship-info {
+/* Detailed Planet View */
+.planet-detail-view {
     background-color: #3e3e60;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-top: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-top: 2rem;
+    text-align: center;
 }
 
-.admin-ship-info input[type="text"] {
-    width: calc(100% - 2rem);
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #0f3460;
-    border-radius: 5px;
-    background-color: #1a1a2e;
-    color: #e0e0e0;
+.planet-detail-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.planet-detail-content .planet-image-container {
+    width: 200px; /* Larger image in detail view */
+    height: 200px;
+    margin-bottom: 0;
+}
+
+.planet-detail-content h3 {
+    font-size: 2.2rem;
+    color: #e94560;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.planet-detail-content p {
+    font-size: 1.1rem;
+    color: #c0c0c0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.planet-detail-content .control-info {
+    font-size: 1.1rem;
+    margin-top: 1rem;
+}
+
+.planet-detail-content .control-info p {
+    margin: 0.2rem 0;
     font-size: 1rem;
 }
 
-.admin-ship-info p {
-    font-size: 0.9rem;
-    color: #c0c0c0;
+.planet-detail-content .battle-info {
+    background-color: #1a1a2e;
+    padding: 1rem;
+    border-radius: 8px;
     margin-top: 1rem;
+    width: 100%;
+    max-width: 400px;
 }
+
+.planet-detail-content .battle-info h4 {
+    color: #0f3460;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.planet-detail-content .battle-info p {
+    font-size: 1rem;
+    margin: 0;
+}
+
 
 /* Army Overview Dropdown */
 .army-overview-controls {
@@ -431,67 +468,54 @@ body {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
+    /* Adjust planet card for initial view on larger screens */
     .planet-card {
-        flex-direction: row; /* Planets side-by-side with text on larger screens */
-        justify-content: space-around;
+        flex-direction: column; /* Keep column for initial grid view */
+        justify-content: center;
         align-items: center;
-        padding: 1.5rem;
+        padding: 1rem;
     }
 
     .planet-image-container {
-        margin-bottom: 0;
-        margin-right: 1.5rem;
+        margin-bottom: 1rem;
+        margin-right: 0;
     }
 
     .planet-info-hover {
-        position: static; /* Show info next to image on hover, not overlay */
+        position: static; /* Always visible short info */
         opacity: 1;
         visibility: visible;
         background-color: transparent;
         color: inherit;
         padding: 0;
         border-radius: 0;
-        flex: 1; /* Take remaining space */
-        text-align: left;
-    }
-
-    .planet-card:hover .planet-info-hover {
-        opacity: 1; /* No change on hover, always visible */
-        visibility: visible;
+        flex: none;
+        text-align: center;
     }
 
     .planet-info-hover h3 {
-        font-size: 1.8rem;
+        font-size: 1.2rem;
     }
 
     .planet-info-hover p {
-        font-size: 1rem;
+        font-size: 0.85rem;
     }
 
-    /* Adjust ship position for larger screens */
-    .ship-image {
-        width: 80px; /* Slightly larger ship */
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%); /* Center ship initially */
-    }
-
-    .admin-ship-info {
-        display: flex;
-        flex-wrap: wrap;
+    /* Detailed planet view on larger screens */
+    .planet-detail-content {
+        flex-direction: row;
         justify-content: center;
-        align-items: center;
-        gap: 1rem;
+        align-items: flex-start;
+        text-align: left;
     }
 
-    .admin-ship-info input[type="text"] {
-        width: auto; /* Allow input to shrink */
-        flex-grow: 1;
-        max-width: 400px;
+    .planet-detail-content .planet-image-container {
+        margin-right: 2rem;
+        margin-bottom: 0;
     }
 
-    .admin-ship-info .button {
-        margin: 0; /* Remove auto margin for flex item */
+    .planet-detail-content .text-content {
+        flex: 1;
     }
 
     .army-overview-controls {

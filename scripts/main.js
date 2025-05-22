@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // IMPORTANT: This is a client-side password and is NOT secure.
     // Anyone can view the source code to find it.
     // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "adam"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!   
+    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -39,11 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let planetsData = [];
 
         try {
-            // CORRECTED FETCH PATHS: Prepend /warhammer-crusade-tracker/ to data file paths
             const [factionsRes, armiesRes, planetsRes] = await Promise.all([
-                fetch('/warhammer-crusade-tracker/data/factions.json'),
-                fetch('/warhammer-crusade-tracker/data/armies.json'),
-                fetch('/warhammer-crusade-tracker/data/planets.json')
+                fetch('data/factions.json'),
+                fetch('data/armies.json'),
+                fetch('data/planets.json')
             ]);
 
             factionsData = await factionsRes.json();
@@ -55,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- Render Components ---
             renderFactionChart(factionsData);
             renderArmyList(armiesData);
-            renderPlanets(planetsData);
+            renderPlanets(planetsData); // Initial render of all planets
             setupArmyOverview(armiesData);
 
         } catch (error) {
@@ -99,8 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)' // Grid line color
                         }
-                    }
-                    ,
+                    },
                     x: {
                         ticks: {
                             color: '#e0e0e0' // X-axis label color
@@ -141,66 +139,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Planetary Control (Planets & Ships) ---
     const planetsContainer = document.getElementById('planets-container');
-    const toggleAdminModeBtn = document.getElementById('toggle-admin-mode');
-    const adminShipInfo = document.getElementById('admin-ship-info');
-    const shipReasonInput = document.getElementById('ship-reason-input');
-    const saveShipReasonBtn = document.getElementById('save-ship-reason');
+    const planetDetailView = document.getElementById('planet-detail-view');
+    const planetDetailContent = document.getElementById('planet-detail-content');
+    const backToPlanetsBtn = document.getElementById('back-to-planets-btn');
 
-    let isAdminMode = false;
-    let currentDraggingShip = null; // To keep track of the ship being dragged
-    let lastDraggedShipId = null; // To know which ship's reason to save
-
-    toggleAdminModeBtn.addEventListener('click', () => {
-        // Simple admin password check for toggling admin mode
-        const adminPassword = prompt("Enter admin password to toggle mode:");
-        if (adminPassword === "admin123") { // <-- CHANGE THIS ADMIN PASSWORD!
-            isAdminMode = !isAdminMode;
-            toggleAdminModeBtn.textContent = isAdminMode ? 'Exit Admin Mode' : 'Toggle Admin Mode';
-            adminShipInfo.classList.toggle('hidden', !isAdminMode);
-            // Re-render planets to apply/remove draggable attribute
-            renderPlanets(planetsData); // Re-render with updated isAdminMode
-            console.log('Admin Mode:', isAdminMode);
-        } else if (adminPassword !== null) { // If user didn't cancel prompt
-            alert("Incorrect admin password.");
-        }
-    });
-
-    saveShipReasonBtn.addEventListener('click', () => {
-        if (lastDraggedShipId) {
-            const reason = shipReasonInput.value;
-            // Find the planet associated with the last dragged ship
-            const planet = planetsData.find(p => p.ship_location === lastDraggedShipId);
-            if (planet) {
-                planet.ship_reason = reason;
-                console.log(`Saved reason for ${lastDraggedShipId}: ${reason}`);
-                alert(`Reason saved for ship near ${planet.name}. (Note: This is not persistent without a backend.)`);
-            } else {
-                alert("No ship is currently associated with a planet to save a reason for.");
-            }
-        } else {
-            alert("No ship has been dragged yet to save a reason for.");
-        }
-    });
-
+    backToPlanetsBtn.addEventListener('click', showAllPlanets);
 
     function renderPlanets(planets) {
         planetsContainer.innerHTML = ''; // Clear previous content
+        planetsContainer.classList.remove('hidden'); // Ensure container is visible
+        planetDetailView.classList.add('hidden'); // Ensure detail view is hidden
 
         planets.forEach(planet => {
             const planetCard = document.createElement('div');
             planetCard.classList.add('planet-card');
-            planetCard.dataset.planetId = planet.id; // Store planet ID for ship dropping
+            planetCard.dataset.planetId = planet.id; // Store planet ID for click handling
 
             const planetImageContainer = document.createElement('div');
             planetImageContainer.classList.add('planet-image-container');
 
             const planetImage = document.createElement('img');
             planetImage.classList.add('planet-image');
-            // CORRECTED IMAGE PATH: /warhammer-crusade-tracker/images/planetX.png
-            planetImage.src = planet.image || `/warhammer-crusade-tracker/images/planet1.png`; // Placeholder if image not found
+            planetImage.src = planet.image || `images/planet1.png`; // Placeholder if image not found
             planetImage.alt = planet.name;
 
-            // Percentage Overlay
+            // Percentage Overlay - Adjusted opacity in CSS for more planet visibility
             const totalPercentage = planet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0);
             let currentHeight = 0;
             planet.factions_control.forEach(fc => {
@@ -225,126 +188,109 @@ document.addEventListener('DOMContentLoaded', () => {
                 planetImageContainer.appendChild(baseOverlay);
             }
 
-
-            // Planet Info on Hover (for mobile/smaller screens)
-            const planetInfoHover = document.createElement('div');
-            planetInfoHover.classList.add('planet-info-hover');
-            planetInfoHover.innerHTML = `
-                <h3>${planet.name}</h3>
-                <p>${planet.description}</p>
-                <p><strong>Control:</strong></p>
-                ${planet.factions_control.map(fc => `<p style="color:${fc.color};">${fc.faction}: ${fc.percentage}%</p>`).join('')}
-                ${planet.ship_reason ? `<p><strong>Battle:</strong> ${planet.ship_reason}</p>` : ''}
-            `;
-
             planetImageContainer.appendChild(planetImage);
-            planetImageContainer.appendChild(planetInfoHover);
             planetCard.appendChild(planetImageContainer);
 
-            // Text info always visible on larger screens
-            const planetTextInfo = document.createElement('div');
-            planetTextInfo.classList.add('planet-info-hover'); // Reusing class, but behavior changed by CSS media query
-            planetTextInfo.innerHTML = `
+            // Short info for initial all-planets view
+            const planetInfoShort = document.createElement('div');
+            planetInfoShort.classList.add('planet-info-hover');
+            planetInfoShort.innerHTML = `
                 <h3>${planet.name}</h3>
-                <p>${planet.description}</p>
-                <p><strong>Control:</strong></p>
-                ${planet.factions_control.map(fc => `<p style="color:${fc.color};">${fc.faction}: ${fc.percentage}%</p>`).join('')}
-                ${planet.ship_reason ? `<p><strong>Battle:</strong> ${planet.ship_reason}</p>` : ''}
+                <p>${planet.description.substring(0, 50)}...</p>
             `;
-            planetCard.appendChild(planetTextInfo);
+            planetCard.appendChild(planetInfoShort);
 
-
-            // Ship Image
+            // Ship Image - Position controlled by 'ship_location' in planets.json
+            // To adjust ship position:
+            // 1. Open data/planets.json
+            // 2. Find the planet the ship is associated with.
+            // 3. Update "ship_location": "planet_id" to the ID of the planet you want the ship to appear next to.
+            //    Set to null to make it appear next to its own planet card.
+            // 4. Update "ship_reason": "Your battle description here."
+            // 5. Save, commit, and push changes to GitHub.
             const shipImage = document.createElement('img');
             shipImage.classList.add('ship-image');
-            // CORRECTED IMAGE PATH: /warhammer-crusade-tracker/images/ship.png
-            shipImage.src = '/warhammer-crusade-tracker/images/ship.png'; // Replace with your ship image path
+            shipImage.src = 'images/ship.png'; // Replace with your ship image path
             shipImage.alt = 'Crusade Ship';
             shipImage.id = `ship-${planet.id}`; // Unique ID for each ship instance
-            shipImage.dataset.shipId = planet.id; // Store which planet this ship belongs to conceptually
 
-            if (isAdminMode) {
-                shipImage.classList.add('admin-mode');
-                shipImage.draggable = true; // Enable drag only in admin mode
-                shipImage.addEventListener('dragstart', handleDragStart);
-            } else {
-                shipImage.classList.remove('admin-mode');
-                shipImage.draggable = false;
-                shipImage.removeEventListener('dragstart', handleDragStart);
-            }
-
-            // Position ship if it was previously set (non-persistent in this version)
+            // Determine where the ship should be placed
             if (planet.ship_location) {
+                // Find the target planet card to append the ship to
                 const targetPlanetCard = document.querySelector(`.planet-card[data-planet-id="${planet.ship_location}"]`);
                 if (targetPlanetCard) {
-                    // Position the ship relative to the target planet card
-                    // This is a simplified positioning. For precise placement, you'd need more complex calculations.
-                    shipImage.style.position = 'absolute';
-                    shipImage.style.top = '10px'; // Example offset
-                    shipImage.style.left = 'calc(100% - 70px)'; // Example offset
                     targetPlanetCard.appendChild(shipImage);
+                    // Position the ship relative to the target planet card
+                    shipImage.style.position = 'absolute';
+                    shipImage.style.top = '10px';
+                    shipImage.style.right = '10px'; // Position on the top right of the target planet
+                } else {
+                    // Fallback if target planet not found, place on its own card
+                    planetCard.appendChild(shipImage);
                 }
             } else {
-                // Default position if not linked to a planet
+                // Default position if not linked to another planet
                 planetCard.appendChild(shipImage);
             }
 
+            // Add click listener for detailed view
+            planetCard.addEventListener('click', () => showPlanetDetail(planet.id));
+
             planetsContainer.appendChild(planetCard);
         });
-
-        // Set up drop targets for planets
-        const allPlanetCards = document.querySelectorAll('.planet-card');
-        allPlanetCards.forEach(card => {
-            card.addEventListener('dragover', handleDragOver);
-            card.addEventListener('drop', handleDrop);
-        });
     }
 
-    // --- Drag and Drop for Ships (Admin Mode) ---
-    function handleDragStart(e) {
-        if (!isAdminMode) return;
-        currentDraggingShip = e.target;
-        lastDraggedShipId = e.target.dataset.shipId; // Store the ID of the ship being dragged
-        e.dataTransfer.setData('text/plain', e.target.id); // Set data for transfer
-        e.target.classList.add('dragging');
-    }
+    function showPlanetDetail(planetId) {
+        const selectedPlanet = planetsData.find(p => p.id === planetId);
+        if (!selectedPlanet) return;
 
-    function handleDragOver(e) {
-        e.preventDefault(); // Allow drop
-    }
-
-    function handleDrop(e) {
-        e.preventDefault();
-        if (!isAdminMode || !currentDraggingShip) return;
-
-        const droppedOnPlanetCard = e.currentTarget;
-        const planetId = droppedOnPlanetCard.dataset.planetId;
-
-        // Update the ship's conceptual location in planetsData (non-persistent)
-        planetsData.forEach(p => {
-            if (p.ship_location === currentDraggingShip.dataset.shipId) {
-                p.ship_location = null; // Clear old location
-                p.ship_reason = null;
+        // Hide all planets and show detail view
+        planetsContainer.classList.add('single-view'); // Add class to container for CSS effects
+        document.querySelectorAll('.planet-card').forEach(card => {
+            if (card.dataset.planetId !== planetId) {
+                card.classList.add('inactive');
+            } else {
+                card.classList.add('active'); // Highlight the active planet
             }
         });
 
-        const targetPlanet = planetsData.find(p => p.id === planetId);
-        if (targetPlanet) {
-            targetPlanet.ship_location = currentDraggingShip.dataset.shipId;
-            // Update the ship's visual position
-            // Append the ship to the new planet card
-            droppedOnPlanetCard.appendChild(currentDraggingShip);
+        // Populate detail view
+        planetDetailContent.innerHTML = `
+            <div class="planet-image-container">
+                <img class="planet-image" src="${selectedPlanet.image}" alt="${selectedPlanet.name}">
+                ${selectedPlanet.factions_control.map(fc => `
+                    <div class="planet-overlay-segment" style="height: ${fc.percentage}%; background-color: ${fc.color}CC; bottom: ${selectedPlanet.factions_control.slice(0, selectedPlanet.factions_control.indexOf(fc)).reduce((sum, prevFc) => sum + prevFc.percentage, 0)}%;"></div>
+                `).join('')}
+                ${selectedPlanet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0) < 100 ? `
+                    <div class="planet-overlay-segment" style="height: ${100 - selectedPlanet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0)}%; background-color: rgba(0, 0, 0, 0.2); bottom: ${selectedPlanet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0)}%;"></div>
+                ` : ''}
+            </div>
+            <div class="text-content">
+                <h3>${selectedPlanet.name}</h3>
+                <p>${selectedPlanet.description}</p>
+                <div class="control-info">
+                    <h4>Current Control:</h4>
+                    ${selectedPlanet.factions_control.map(fc => `<p style="color:${fc.color};"><strong>${fc.faction}:</strong> ${fc.percentage}%</p>`).join('')}
+                </div>
+                ${selectedPlanet.ship_reason ? `
+                    <div class="battle-info">
+                        <h4>Current Battle:</h4>
+                        <p>${selectedPlanet.ship_reason}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `;
 
-            // For simplicity, we'll just place it at a fixed spot on the new card
-            currentDraggingShip.style.position = 'absolute';
-            currentDraggingShip.style.top = '10px';
-            currentDraggingShip.style.left = 'calc(100% - 70px)'; // Adjust as needed
-        }
+        planetsContainer.classList.add('hidden'); // Hide the grid of planets
+        planetDetailView.classList.remove('hidden'); // Show the detailed view
+    }
 
-        currentDraggingShip.classList.remove('dragging');
-        currentDraggingShip = null;
-        // Re-render planets to update ship positions and potentially info (though not persistent)
-        renderPlanets(planetsData);
+    function showAllPlanets() {
+        planetsContainer.classList.remove('hidden', 'single-view');
+        document.querySelectorAll('.planet-card').forEach(card => {
+            card.classList.remove('inactive', 'active');
+        });
+        planetDetailView.classList.add('hidden');
     }
 
 
