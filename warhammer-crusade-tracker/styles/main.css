@@ -1,0 +1,508 @@
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+/* Base Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a2e; /* Dark background */
+    color: #e0e0e0; /* Light text */
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.main-content {
+    display: none; /* Hidden by default, shown after password */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: #2a2a4a;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: #e94560; /* Accent color */
+    margin-bottom: 0.5rem;
+}
+
+.campaign-name {
+    color: #0f3460; /* Darker accent */
+    font-weight: 700;
+}
+
+.intro-text {
+    font-size: 1.1rem;
+    max-width: 800px;
+    margin: 0.5rem auto;
+    color: #b0b0b0;
+}
+
+/* Sections */
+.section {
+    background-color: #2a2a4a;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.section h2 {
+    font-size: 2rem;
+    color: #e94560;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.sub-text {
+    text-align: center;
+    color: #b0b0b0;
+    margin-bottom: 1.5rem;
+}
+
+/* Buttons */
+.button {
+    background-color: #0f3460;
+    color: #e0e0e0;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: block; /* Make buttons block level by default for mobile */
+    width: fit-content; /* Adjust width to content */
+    margin: 1rem auto; /* Center buttons */
+}
+
+.button:hover {
+    background-color: #164a80;
+    transform: translateY(-2px);
+}
+
+.button:active {
+    transform: translateY(0);
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px; /* Fixed height for chart on mobile */
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Grid Layout for Armies and Planets */
+.grid-container {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+}
+
+/* Army List Card */
+.army-card {
+    background-color: #3e3e60;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.army-card:hover {
+    transform: translateY(-5px);
+}
+
+.army-card h3 {
+    color: #e94560;
+    font-size: 1.4rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.army-card p {
+    font-size: 0.9rem;
+    color: #c0c0c0;
+}
+
+/* Planet Card */
+.planet-card {
+    background-color: #3e3e60;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative; /* For positioning ship and overlay */
+    overflow: hidden; /* Ensure percentage overlay doesn't spill */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.planet-image-container {
+    position: relative;
+    width: 150px; /* Fixed size for planet image container */
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border: 3px solid #0f3460;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.planet-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.planet-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    opacity: 0.7; /* Semi-transparent */
+    mix-blend-mode: multiply; /* Blends colors nicely */
+    transition: all 0.3s ease;
+    transform-origin: bottom; /* Fill from bottom */
+    background-color: rgba(0, 0, 0, 0.2); /* Default background for empty part */
+}
+
+.planet-overlay-segment {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transform-origin: bottom;
+    transition: height 0.5s ease-out;
+}
+
+.planet-info-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    border-radius: 50%; /* Match planet shape */
+    text-align: center;
+}
+
+.planet-card:hover .planet-info-hover {
+    opacity: 1;
+    visibility: visible;
+}
+
+.planet-info-hover h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #e94560;
+    font-size: 1.5rem;
+}
+
+.planet-info-hover p {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Ship Image */
+.ship-image {
+    width: 60px; /* Size of the ship */
+    height: auto;
+    position: absolute;
+    top: 10px; /* Initial position, will be moved by JS */
+    right: 10px;
+    cursor: grab;
+    transition: all 0.3s ease; /* Smooth transition for movement */
+    z-index: 10; /* Ensure ship is on top */
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+}
+
+.ship-image.dragging {
+    cursor: grabbing;
+    opacity: 0.8;
+}
+
+.ship-image.admin-mode {
+    cursor: grab;
+}
+
+/* Admin Controls */
+.admin-controls {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.admin-ship-info {
+    background-color: #3e3e60;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.admin-ship-info input[type="text"] {
+    width: calc(100% - 2rem);
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid #0f3460;
+    border-radius: 5px;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+.admin-ship-info p {
+    font-size: 0.9rem;
+    color: #c0c0c0;
+    margin-top: 1rem;
+}
+
+/* Army Overview Dropdown */
+.army-overview-controls {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.army-overview-controls label {
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+    color: #e94560;
+}
+
+.dropdown {
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    border: 1px solid #0f3460;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%; /* Full width on mobile */
+    max-width: 300px; /* Limit width on larger screens */
+    margin-top: 0.5rem; /* Space from label on mobile */
+}
+
+/* Selected Army Details Card */
+.army-details-card {
+    background-color: #3e3e60;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    margin-top: 1.5rem;
+}
+
+.army-details-card h3 {
+    color: #e94560;
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+}
+
+.army-details-card p {
+    margin-bottom: 0.5rem;
+    color: #c0c0c0;
+}
+
+.army-details-card p strong {
+    color: #e0e0e0;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background-color: #2a2a4a;
+    border-radius: 10px;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.footer p {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Password Overlay Styles */
+.password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.password-modal {
+    background-color: #2a2a4a;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    max-width: 400px;
+    width: 90%;
+}
+
+.password-modal h2 {
+    color: #e94560;
+    margin-top: 0;
+    font-size: 1.8rem;
+}
+
+.password-modal p {
+    color: #e0e0e0;
+    margin-bottom: 1rem;
+}
+
+.password-modal input[type="password"] {
+    width: calc(100% - 2rem);
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #0f3460;
+    border-radius: 5px;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.password-modal .button {
+    margin-top: 0;
+}
+
+.password-warning {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 1.5rem;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+    .header h1 {
+        font-size: 3.5rem;
+    }
+
+    .intro-text {
+        font-size: 1.2rem;
+    }
+
+    .section h2 {
+        font-size: 2.5rem;
+    }
+
+    .chart-container {
+        height: 400px; /* Taller chart on larger screens */
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .planet-card {
+        flex-direction: row; /* Planets side-by-side with text on larger screens */
+        justify-content: space-around;
+        align-items: center;
+        padding: 1.5rem;
+    }
+
+    .planet-image-container {
+        margin-bottom: 0;
+        margin-right: 1.5rem;
+    }
+
+    .planet-info-hover {
+        position: static; /* Show info next to image on hover, not overlay */
+        opacity: 1;
+        visibility: visible;
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+        border-radius: 0;
+        flex: 1; /* Take remaining space */
+        text-align: left;
+    }
+
+    .planet-card:hover .planet-info-hover {
+        opacity: 1; /* No change on hover, always visible */
+        visibility: visible;
+    }
+
+    .planet-info-hover h3 {
+        font-size: 1.8rem;
+    }
+
+    .planet-info-hover p {
+        font-size: 1rem;
+    }
+
+    /* Adjust ship position for larger screens */
+    .ship-image {
+        width: 80px; /* Slightly larger ship */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Center ship initially */
+    }
+
+    .admin-ship-info {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .admin-ship-info input[type="text"] {
+        width: auto; /* Allow input to shrink */
+        flex-grow: 1;
+        max-width: 400px;
+    }
+
+    .admin-ship-info .button {
+        margin: 0; /* Remove auto margin for flex item */
+    }
+
+    .army-overview-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dropdown {
+        width: auto;
+        margin-top: 0;
+    }
+}

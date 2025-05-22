@@ -1,0 +1,46 @@
+[
+    {
+      "id": "ultramarines",
+      "name": "Ultramarines (John Doe)",
+      "faction": "Imperium",
+      "player": "John Doe",
+      "description": "A disciplined chapter of Space Marines, adhering strictly to the Codex Astartes. Known for their tactical prowess and unwavering loyalty to the Emperor. This force focuses on balanced combined arms operations, employing heavy infantry and reliable armored support.",
+      "crusade_points": 100,
+      "battles_played": 5,
+      "victories": 3,
+      "notes": "Currently focused on securing vital supply lines on Terra Nova."
+    },
+    {
+      "id": "ork-speedwaaagh",
+      "name": "Ork Speedwaaagh! (Jane Smith)",
+      "faction": "Xenos",
+      "player": "Jane Smith",
+      "description": "A raucous and fast-moving Ork horde, obsessed with speed and vehicular combat. Their forces are comprised of numerous Trukks, Buggies, and Deffkoptas, designed to close with the enemy quickly and unleash a torrent of dakka. WAAAGH! energy is high!",
+      "crusade_points": 95,
+      "battles_played": 6,
+      "victories": 4,
+      "notes": "Recently acquired new 'shoota' vehicles, looking for a good fight."
+    },
+    {
+      "id": "death-guard",
+      "name": "Death Guard (Mike Johnson)",
+      "faction": "Chaos",
+      "player": "Mike Johnson",
+      "description": "The inexorable legions of Nurgle, spreading plague and despair across the galaxy. This army is slow but incredibly resilient, shrugging off damage that would fell lesser warriors. Their advance is a tide of corruption, bringing disease and despair to all who stand against them.",
+      "crusade_points": 110,
+      "battles_played": 5,
+      "victories": 3,
+      "notes": "Consolidating gains on Xylos Prime, preparing for a major offensive."
+    },
+    {
+      "id": "craftworld-iyanden",
+      "name": "Craftworld Iyanden (Sarah Lee)",
+      "faction": "Aeldari",
+      "player": "Sarah Lee",
+      "description": "The spectral hosts of Craftworld Iyanden, composed primarily of Wraith constructs animated by the souls of their fallen ancestors. They strike with precision and grace, but their numbers are few. Their goal is to protect the remaining Aeldari from the encroaching darkness.",
+      "crusade_points": 85,
+      "battles_played": 4,
+      "victories": 2,
+      "notes": "Seeking ancient artifacts on the fringe of the campaign zone."
+    }
+  ]

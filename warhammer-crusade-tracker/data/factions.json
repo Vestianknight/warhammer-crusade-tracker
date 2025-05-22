@@ -1,0 +1,23 @@
+[
+    {
+      "name": "Imperium",
+      "score": 80,
+      "color": "#4A90E2"
+    },
+    {
+      "name": "Chaos",
+      "score": 65,
+      "color": "#D0021B"
+    },
+    {
+      "name": "Xenos",
+      "score": 70,
+      "color": "#7ED321"
+    },
+    {
+      "name": "Aeldari",
+      "score": 55,
+      "color": "#F5A623"
+    }
+  ]
+  
