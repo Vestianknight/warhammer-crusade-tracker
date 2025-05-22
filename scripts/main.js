@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // IMPORTANT: This is a client-side password and is NOT secure.
     // Anyone can view the source code to find it.
     // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "1234"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -54,7 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Data loaded:', { factionsData, armiesData, planetsData });
 
             // --- Render Components ---
-            renderFactionChart(factionsData);
+            // Pass both factionsData and armiesData to renderFactionChart
+            renderFactionChart(factionsData, armiesData);
             renderArmyList(armiesData);
             renderPlanets(planetsData); // Initial render of all planets
             setupArmyOverview(armiesData);
@@ -68,42 +69,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Faction Progress Bar Graph ---
-    function renderFactionChart(factions) {
+    // --- Helper for generating consistent colors for armies ---
+    const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#C9CBCF', '#6A8B82', '#E6B0AA', '#D2B4DE', '#A9CCE3', '#FADBD8'
+    ];
+    let colorIndex = 0;
+    function getNextColor() {
+        const color = colors[colorIndex % colors.length];
+        colorIndex++;
+        return color;
+    }
+
+
+    // --- Faction Progress Stacked Bar Graph ---
+    // Now takes both factions and armies data
+    function renderFactionChart(factions, armies) {
         const ctx = document.getElementById('factionBarChart').getContext('2d');
-        const factionNames = factions.map(f => f.name);
-        const factionScores = factions.map(f => f.score);
-        const factionColors = factions.map(f => f.color);
+
+        // Map faction names to their index for dataset data array
+        const factionLabels = factions.map(f => f.name);
+        const factionIndexMap = new Map(factionLabels.map((name, index) => [name, index]));
+
+        const datasets = [];
+        const armyColors = new Map(); // To store colors for each army for consistency
+
+        // Group armies by faction and prepare datasets
+        armies.forEach(army => {
+            // Assign a consistent color to each army
+            if (!armyColors.has(army.id)) {
+                armyColors.set(army.id, getNextColor());
+            }
+            const armyColor = armyColors.get(army.id);
+
+            // Create a data array for this army's contribution
+            // It will have a value only for its own faction's column, 0 for others
+            const data = new Array(factionLabels.length).fill(0);
+            const factionIndex = factionIndexMap.get(army.faction);
+            if (factionIndex !== undefined) {
+                data[factionIndex] = army.crusade_points;
+            }
+
+            datasets.push({
+                label: army.name, // Label for the legend (e.g., "Ultramarines (John Doe)")
+                data: data,
+                backgroundColor: armyColor,
+                borderColor: armyColor,
+                borderWidth: 1
+            });
+        });
+
+        // Destroy existing chart instance if it exists to prevent conflicts
+        if (Chart.getChart(ctx)) {
+            Chart.getChart(ctx).destroy();
+        }
 
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: factionNames,
-                datasets: [{
-                    label: 'Crusade Score',
-                    data: factionScores,
-                    backgroundColor: factionColors.map(color => `${color}B3`), // 70% opacity
-                    borderColor: factionColors,
-                    borderWidth: 1
-                }]
+                labels: factionLabels, // Faction names on the X-axis
+                datasets: datasets // Each army is a dataset
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 150, // Adjust max score as needed for your campaign
+                    x: {
+                        stacked: true, // Crucial for stacked bars
                         ticks: {
-                            color: '#e0e0e0' // Y-axis label color
+                            color: '#e0e0e0' // X-axis label color
                         },
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)' // Grid line color
                         }
                     },
-                    x: {
+                    y: {
+                        stacked: true, // Crucial for stacked bars
+                        beginAtZero: true,
+                        max: 400, // Adjust max score as needed for your campaign's total points per faction
                         ticks: {
-                            color: '#e0e0e0' // X-axis label color
+                            color: '#e0e0e0' // Y-axis label color
                         },
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)' // Grid line color
@@ -113,7 +158,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 plugins: {
                     legend: {
                         labels: {
-                            color: '#e0e0e0' // Legend text color
+                            color: '#e0e0e0', // Legend text color
+                            boxWidth: 20, // Size of the color box next to legend item
+                            padding: 10 // Padding between legend items
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false, // Show all items in stack on hover
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' Crusade Points';
+                                }
+                                return label;
+                            },
+                            title: function(context) {
+                                // Display the faction name at the top of the tooltip
+                                return context[0].label;
+                            }
                         }
                     }
                 }
