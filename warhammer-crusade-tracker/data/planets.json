@@ -1,38 +1,38 @@
 [
-    {
-      "id": "planet1",
-      "name": "Terra Nova",
-      "description": "A newly colonized world, rich in strategic resources. Control of its vast mineral deposits is crucial for the war effort.",
-      "image": "images/planet1.png",
-      "factions_control": [
-        { "faction": "Imperium", "percentage": 70, "color": "#4A90E2" },
-        { "faction": "Chaos", "percentage": 30, "color": "#D0021B" }
-      ],
-      "ship_location": null,
-      "ship_reason": null
-    },
-    {
-      "id": "planet2",
-      "name": "Xylos Prime",
-      "description": "An ancient, ruined Xenos homeworld, rumored to hold powerful relics. Its desolate surface hides forgotten technologies and dangerous entities.",
-      "image": "images/planet2.png",
-      "factions_control": [
-        { "faction": "Orks", "percentage": 50, "color": "#7ED321" },
-        { "faction": "Death Guard", "percentage": 50, "color": "#D0021B" }
-      ],
-      "ship_location": null,
-      "ship_reason": null
-    },
-    {
-      "id": "planet3",
-      "name": "Veridian Reach",
-      "description": "A verdant agri-world, vital for sustaining the local population. Its fertile lands are a prime target for any invading force seeking to starve out resistance.",
-      "image": "images/planet3.png",
-      "factions_control": [
-        { "faction": "Aeldari", "percentage": 40, "color": "#F5A623" },
-        { "faction": "Imperium", "percentage": 60, "color": "#4A90E2" }
-      ],
-      "ship_location": null,
-      "ship_reason": null
-    }
-  ]
+  {
+    "id": "planet1",
+    "name": "Terra Nova",
+    "description": "A newly colonized world, rich in strategic resources. Control of its vast mineral deposits is crucial for the war effort.",
+    "image": "/warhammer-crusade-tracker/images/planet1.png",
+    "factions_control": [
+      { "faction": "Imperium", "percentage": 70, "color": "#4A90E2" },
+      { "faction": "Chaos", "percentage": 30, "color": "#D0021B" }
+    ],
+    "ship_location": null,
+    "ship_reason": null
+  },
+  {
+    "id": "planet2",
+    "name": "Xylos Prime",
+    "description": "An ancient, ruined Xenos homeworld, rumored to hold powerful relics. Its desolate surface hides forgotten technologies and dangerous entities.",
+    "image": "/warhammer-crusade-tracker/images/planet2.png",
+    "factions_control": [
+      { "faction": "Orks", "percentage": 50, "color": "#7ED321" },
+      { "faction": "Death Guard", "percentage": 50, "color": "#D0021B" }
+    ],
+    "ship_location": null,
+    "ship_reason": null
+  },
+  {
+    "id": "planet3",
+    "name": "Veridian Reach",
+    "description": "A verdant agri-world, vital for sustaining the local population. Its fertile lands are a prime target for any invading force seeking to starve out resistance.",
+    "image": "/warhammer-crusade-tracker/images/planet3.png",
+    "factions_control": [
+      { "faction": "Aeldari", "percentage": 40, "color": "#F5A623" },
+      { "faction": "Imperium", "percentage": 60, "color": "#4A90E2" }
+    ],
+    "ship_location": null,
+    "ship_reason": null
+  }
+]

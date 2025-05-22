@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // IMPORTANT: This is a client-side password and is NOT secure.
     // Anyone can view the source code to find it.
     // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "adam"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -39,10 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let planetsData = [];
 
         try {
+            // CORRECTED FETCH PATHS: Prepend /warhammer-crusade-tracker/ to data file paths
             const [factionsRes, armiesRes, planetsRes] = await Promise.all([
-                fetch('data/factions.json'),
-                fetch('data/armies.json'),
-                fetch('data/planets.json')
+                fetch('/warhammer-crusade-tracker/data/factions.json'),
+                fetch('/warhammer-crusade-tracker/data/armies.json'),
+                fetch('/warhammer-crusade-tracker/data/planets.json')
             ]);
 
             factionsData = await factionsRes.json();
@@ -98,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)' // Grid line color
                         }
-                    },
+                    }
+                    ,
                     x: {
                         ticks: {
                             color: '#e0e0e0' // X-axis label color
@@ -194,7 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const planetImage = document.createElement('img');
             planetImage.classList.add('planet-image');
-            planetImage.src = planet.image || `https://placehold.co/150x150/0f3460/e0e0e0?text=${planet.name.substring(0, 5)}`; // Placeholder if image not found
+            // CORRECTED IMAGE PATH: /warhammer-crusade-tracker/images/planetX.png
+            planetImage.src = planet.image || `/warhammer-crusade-tracker/images/planet1.png`; // Placeholder if image not found
             planetImage.alt = planet.name;
 
             // Percentage Overlay
@@ -254,7 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Ship Image
             const shipImage = document.createElement('img');
             shipImage.classList.add('ship-image');
-            shipImage.src = 'images/ship.png'; // Replace with your ship image path
+            // CORRECTED IMAGE PATH: /warhammer-crusade-tracker/images/ship.png
+            shipImage.src = '/warhammer-crusade-tracker/images/ship.png'; // Replace with your ship image path
             shipImage.alt = 'Crusade Ship';
             shipImage.id = `ship-${planet.id}`; // Unique ID for each ship instance
             shipImage.dataset.shipId = planet.id; // Store which planet this ship belongs to conceptually
