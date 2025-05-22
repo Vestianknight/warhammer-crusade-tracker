@@ -10,7 +10,6 @@ body {
     color: #e0e0e0; /* Light text for general content */
     line-height: 1.6;
     overflow-x: hidden; /* Prevent horizontal scrolling */
-    /* Removed subtle space background from body */
 }
 
 .main-content {
@@ -159,6 +158,27 @@ body {
     background-color: #164a80;
 }
 
+/* Army Card Header for logo placement */
+.army-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Space between title and logo */
+    margin-bottom: 1rem;
+}
+
+.army-card-header h3 {
+    margin: 0; /* Reset margin for h3 inside flex */
+}
+
+/* Army Logo in overview card */
+.army-card-ship-image { /* Renamed for clarity, it's the army's ship on the card */
+    width: 40px; /* Smaller size for overview card */
+    height: 40px;
+    object-fit: contain; /* Ensure the whole ship is visible */
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+}
+
 /* Army Detail Page Container */
 .army-detail-page-container {
     background-color: #3e3e60;
@@ -192,6 +212,15 @@ body {
 
 .army-detail-page-container #army-detail-content p strong {
     color: #e0e0e0;
+}
+
+/* Army Ship Image in detail page */
+.army-detail-ship-image {
+    width: 100px; /* Larger size for detail page ship */
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.6));
 }
 
 
@@ -402,12 +431,12 @@ body {
 }
 
 
-/* Ship Image */
-.ship-image {
+/* Ship Image on Planet Card */
+.ship-image { /* This is the ship on the planet card */
     width: 60px; /* Size of the ship */
     height: auto;
     position: absolute;
-    top: 10px; /* Initial position, will be moved by JS */
+    top: 10px; /* Position on the top right of the planet card */
     right: 10px;
     z-index: 10; /* Ensure ship is on top */
     filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));

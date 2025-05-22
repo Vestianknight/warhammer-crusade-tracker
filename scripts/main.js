@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Password Protection ---
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
-    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "1234"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
@@ -59,7 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Initial render of components
             renderFactionChart(factionsData, armiesData);
-            renderPlanets(planetsData);
+            renderPlanets(planetsData); // Planets need armiesData to place ships
+            // renderPlanets needs to be called after armiesData is loaded
+            // so we can pass it or make armiesData global (which it is now)
 
             // Set up hash-based routing
             window.addEventListener('hashchange', router);
@@ -70,36 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
             mainContent.innerHTML = `<p style="color: red; text-align: center;">
                                         Failed to load campaign data. Please check the data files and try again.
                                     </p>`;
-        }
-    }
-
-    // --- Router Function ---
-    function router() {
-        const hash = window.location.hash;
-        console.log('Current hash:', hash);
-
-        // Hide all main sections by default
-        factionProgressSection.classList.add('hidden');
-        armyRosterSection.classList.add('hidden');
-        planetaryControlSection.classList.add('hidden');
-        resourcesSection.classList.add('hidden');
-
-        // Reset army detail view state
-        armyListOverview.classList.remove('hidden');
-        armyDetailPageContainer.classList.add('hidden');
-        armyDetailContent.innerHTML = ''; // Clear previous detail content
-
-        if (hash.startsWith('#army-')) {
-            const armyId = hash.substring(6); // Remove '#army-' prefix
-            renderArmyDetailPage(armyId);
-            armyRosterSection.classList.remove('hidden'); // Show the army section
-        } else {
-            // Default view: show all main sections
-            factionProgressSection.classList.remove('hidden');
-            armyRosterSection.classList.remove('hidden');
-            planetaryControlSection.classList.remove('hidden');
-            resourcesSection.classList.remove('hidden');
-            renderArmyListOverview(armiesData); // Render the main army list overview
         }
     }
 
@@ -232,7 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const armyCard = document.createElement('div');
             armyCard.classList.add('army-card');
             armyCard.innerHTML = `
-                <h3>${army.name}</h3>
+                <div class="army-card-header">
+                    <h3>${army.name}</h3>
+                    <img src="${army.ship_image}" alt="${army.name} Ship" class="army-card-ship-image">
+                </div>
                 <p><strong>Faction:</strong> ${army.faction}</p>
                 <p>${army.description.substring(0, 100)}...</p>
                 <button class="view-button" data-army-id="${army.id}">View Details</button>
@@ -257,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         armyDetailPageContainer.classList.remove('hidden'); // Show the detail container
 
         armyDetailContent.innerHTML = `
+            <img src="${army.ship_image}" alt="${army.name} Ship" class="army-detail-ship-image">
             <h3>${army.name}</h3>
             <p><strong>Player:</strong> ${army.player}</p>
             <p><strong>Faction:</strong> ${army.faction}</p>
@@ -267,9 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>Notes:</strong> ${army.notes || 'N/A'}</p>
         `;
 
-        backToRosterBtn.addEventListener('click', () => {
-            window.location.hash = ''; // Go back to the main view (empty hash)
-        }, { once: true }); // Ensure listener is only active once
+        document.getElementById('back-to-roster-btn').classList.remove('hidden');
     }
 
 
@@ -339,30 +313,21 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             planetCard.appendChild(planetInfoShort);
 
-            // Ship Image - Position controlled by 'ship_location' in planets.json
-            // To adjust ship position:
-            // 1. Open data/planets.json
-            // 2. Find the planet the ship is associated with.
-            // 3. Update "ship_location": "planet_id" to the ID of the planet you want the ship to appear next to.
-            //    Set to null to make it appear next to its own planet card (default top-right corner).
-            // 4. Update "ship_reason": "Your battle description here."
-            // 5. Save, commit, and push changes to GitHub.
-            const shipImage = document.createElement('img');
-            shipImage.classList.add('ship-image');
-            shipImage.src = 'images/ship.png'; // Replace with your ship image path
-            shipImage.alt = 'Crusade Ship';
-            shipImage.id = `ship-${planet.id}`; // Unique ID for each ship instance
-
-            // Determine where the ship should be placed
-            if (planet.ship_location) {
-                // Find the target planet card to append the ship to
-                // Note: This query needs to be done *after* all planet cards are rendered
-                // For initial render, we'll place it on its own card and then re-position if needed by showPlanetDetail
-                planetCard.appendChild(shipImage); // Temporarily add to its own card
-            } else {
-                // Default position if not linked to another planet
-                planetCard.appendChild(shipImage);
+            // --- Ship Image for Planet ---
+            // If this planet has an army fighting on it, display that army's ship
+            if (planet.fighting_army_id) {
+                const fightingArmy = armiesData.find(army => army.id === planet.fighting_army_id);
+                if (fightingArmy && fightingArmy.ship_image) {
+                    const shipImageElement = document.createElement('img');
+                    shipImageElement.classList.add('ship-image');
+                    shipImageElement.src = fightingArmy.ship_image; // Use the army's specific ship image
+                    shipImageElement.alt = `${fightingArmy.name} Ship`;
+                    shipImageElement.title = `${fightingArmy.name} is battling here!`; // Tooltip for the ship
+                    planetCard.appendChild(shipImageElement);
+                }
             }
+            // --- End Ship Image for Planet ---
+
 
             // Container for detailed info (initially hidden)
             const planetDetailContentInCard = document.createElement('div');
@@ -381,20 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             planetsContainer.appendChild(planetCard);
         });
-
-        // After all planets are rendered, re-position ships based on ship_location
-        planets.forEach(planet => {
-            if (planet.ship_location && planet.ship_location !== planet.id) {
-                const shipElement = document.getElementById(`ship-${planet.id}`);
-                const targetPlanetCard = document.querySelector(`.planet-card[data-planet-id="${planet.ship_location}"]`);
-                if (shipElement && targetPlanetCard) {
-                    targetPlanetCard.appendChild(shipElement);
-                    shipElement.style.position = 'absolute';
-                    shipElement.style.top = '10px';
-                    shipElement.style.right = '10px';
-                }
-            }
-        });
     }
 
     function showPlanetDetail(planetId) {
@@ -403,8 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentActivePlanetId = planetId; // Set the active planet
 
-        // Hide back button initially, will be shown by CSS
-        document.getElementById('back-to-planets-btn').classList.remove('hidden');
+        document.getElementById('back-to-planets-btn').classList.remove('hidden'); // Show back button
 
         planetsContainer.classList.add('single-view'); // Add class to container for CSS effects
 
@@ -434,6 +384,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shortInfoDiv) shortInfoDiv.classList.add('hidden');
                 if (detailContentDiv) detailContentDiv.classList.remove('hidden');
 
+                // Find the fighting army to display its name in the battle info
+                const fightingArmy = selectedPlanet.fighting_army_id ? armiesData.find(a => a.id === selectedPlanet.fighting_army_id) : null;
+                const battleInfoHtml = selectedPlanet.battle_reason ? `
+                    <div class="battle-info">
+                        <h4>Current Battle:</h4>
+                        <p>${selectedPlanet.battle_reason}</p>
+                        ${fightingArmy ? `<p><strong>Army:</strong> ${fightingArmy.name}</p>` : ''}
+                    </div>
+                ` : '';
+
                 detailContentDiv.innerHTML = `
                     <h3>${selectedPlanet.name}</h3>
                     <p>${selectedPlanet.description}</p>
@@ -441,12 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h4>Current Control:</h4>
                         ${selectedPlanet.factions_control.map(fc => `<p style="color:${fc.color};"><strong>${fc.faction}:</strong> ${fc.percentage}%</p>`).join('')}
                     </div>
-                    ${selectedPlanet.ship_reason ? `
-                        <div class="battle-info">
-                            <h4>Current Battle:</h4>
-                            <p>${selectedPlanet.ship_reason}</p>
-                        </div>
-                    ` : ''}
+                    ${battleInfoHtml}
                 `;
             }
         });
