@@ -1,46 +1,68 @@
 [
-    {
-      "id": "ultramarines",
-      "name": "Ultramarines (John Doe)",
-      "faction": "Imperium",
-      "player": "John Doe",
-      "description": "A disciplined chapter of Space Marines, adhering strictly to the Codex Astartes. Known for their tactical prowess and unwavering loyalty to the Emperor. This force focuses on balanced combined arms operations, employing heavy infantry and reliable armored support.",
-      "crusade_points": 100,
-      "battles_played": 5,
-      "victories": 3,
-      "notes": "Currently focused on securing vital supply lines on Terra Nova."
-    },
-    {
-      "id": "ork-speedwaaagh",
-      "name": "Ork Speedwaaagh! (Jane Smith)",
-      "faction": "Xenos",
-      "player": "Jane Smith",
-      "description": "A raucous and fast-moving Ork horde, obsessed with speed and vehicular combat. Their forces are comprised of numerous Trukks, Buggies, and Deffkoptas, designed to close with the enemy quickly and unleash a torrent of dakka. WAAAGH! energy is high!",
-      "crusade_points": 95,
-      "battles_played": 6,
-      "victories": 4,
-      "notes": "Recently acquired new 'shoota' vehicles, looking for a good fight."
-    },
-    {
-      "id": "death-guard",
-      "name": "Death Guard (Mike Johnson)",
-      "faction": "Chaos",
-      "player": "Mike Johnson",
-      "description": "The inexorable legions of Nurgle, spreading plague and despair across the galaxy. This army is slow but incredibly resilient, shrugging off damage that would fell lesser warriors. Their advance is a tide of corruption, bringing disease and despair to all who stand against them.",
-      "crusade_points": 110,
-      "battles_played": 5,
-      "victories": 3,
-      "notes": "Consolidating gains on Xylos Prime, preparing for a major offensive."
-    },
-    {
-      "id": "craftworld-iyanden",
-      "name": "Craftworld Iyanden (Sarah Lee)",
-      "faction": "Aeldari",
-      "player": "Sarah Lee",
-      "description": "The spectral hosts of Craftworld Iyanden, composed primarily of Wraith constructs animated by the souls of their fallen ancestors. They strike with precision and grace, but their numbers are few. Their goal is to protect the remaining Aeldari from the encroaching darkness.",
-      "crusade_points": 85,
-      "battles_played": 4,
-      "victories": 2,
-      "notes": "Seeking ancient artifacts on the fringe of the campaign zone."
-    }
-  ]
+  {
+    "id": "ultramarines",
+    "name": "Ultramarines (John Doe)",
+    "faction": "Imperium",
+    "player": "John Doe",
+    "description": "A disciplined chapter of Space Marines, adhering strictly to the Codex Astartes. Known for their tactical prowess and unwavering loyalty to the Emperor. This force focuses on balanced combined arms operations, employing heavy infantry and reliable armored support.",
+    "crusade_points": 100,
+    "battles_played": 5,
+    "victories": 3,
+    "notes": "Currently focused on securing vital supply lines on Terra Nova."
+  },
+  {
+    "id": "ork-speedwaaagh",
+    "name": "Ork Speedwaaagh! (Jane Smith)",
+    "faction": "Xenos",
+    "player": "Jane Smith",
+    "description": "A raucous and fast-moving Ork horde, obsessed with speed and vehicular combat. Their forces are comprised of numerous Trukks, Buggies, and Deffkoptas, designed to close with the enemy quickly and unleash a torrent of dakka. WAAAGH! energy is high!",
+    "crusade_points": 95,
+    "battles_played": 6,
+    "victories": 4,
+    "notes": "Recently acquired new 'shoota' vehicles, looking for a good fight."
+  },
+  {
+    "id": "death-guard",
+    "name": "Death Guard (Mike Johnson)",
+    "faction": "Chaos",
+    "player": "Mike Johnson",
+    "description": "The inexorable legions of Nurgle, spreading plague and despair across the galaxy. This army is slow but incredibly resilient, shrugging off damage that would fell lesser warriors. Their advance is a tide of corruption, bringing disease and despair to all who stand against them.",
+    "crusade_points": 110,
+    "battles_played": 5,
+    "victories": 3,
+    "notes": "Consolidating gains on Xylos Prime, preparing for a major offensive."
+  },
+  {
+    "id": "craftworld-iyanden",
+    "name": "Craftworld Iyanden (Sarah Lee)",
+    "faction": "Aeldari",
+    "player": "Sarah Lee",
+    "description": "The spectral hosts of Craftworld Iyanden, composed primarily of Wraith constructs animated by the souls of their fallen ancestors. They strike with precision and grace, but their numbers are few. Their goal is to protect the remaining Aeldari from the encroaching darkness.",
+    "crusade_points": 85,
+    "battles_played": 4,
+    "victories": 2,
+    "notes": "Seeking ancient artifacts on the fringe of the campaign zone."
+  },
+  {
+    "id": "adeptus-custodes",
+    "name": "Adeptus Custodes (Gabe Gutierrez)",
+    "faction": "Imperium",
+    "player": "Gabe Gutierrez",
+    "description": "The Ten Thousand, the Emperor's personal guard, clad in auramite and wielding the finest weaponry. Each Custodian is a demigod of war, a living work of art and destruction. They are few in number but unmatched in skill and might.",
+    "crusade_points": 120,
+    "battles_played": 3,
+    "victories": 3,
+    "notes": "Deployed to secure a vital Imperial relic, their presence alone inspires awe."
+  },
+  {
+    "id": "tyranids",
+    "name": "Tyranid Swarm (Emily White)",
+    "faction": "Xenos",
+    "player": "Emily White",
+    "description": "The Great Devourer, an endless tide of bio-engineered horrors from beyond the galaxy. The Tyranid swarm consumes all in its path, adapting and evolving with terrifying speed. Their goal is simple: biomass.",
+    "crusade_points": 105,
+    "battles_played": 5,
+    "victories": 3,
+    "notes": "A vanguard fleet has been detected, consuming outer system worlds rapidly."
+  }
+]
