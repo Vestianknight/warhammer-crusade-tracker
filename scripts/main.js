@@ -139,16 +139,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Planetary Control (Planets & Ships) ---
     const planetsContainer = document.getElementById('planets-container');
-    const planetDetailView = document.getElementById('planet-detail-view');
-    const planetDetailContent = document.getElementById('planet-detail-content');
-    const backToPlanetsBtn = document.getElementById('back-to-planets-btn');
-
-    backToPlanetsBtn.addEventListener('click', showAllPlanets);
+    let currentActivePlanetId = null; // To track which planet is in detail view
 
     function renderPlanets(planets) {
         planetsContainer.innerHTML = ''; // Clear previous content
-        planetsContainer.classList.remove('hidden'); // Ensure container is visible
-        planetDetailView.classList.add('hidden'); // Ensure detail view is hidden
+        planetsContainer.classList.remove('single-view'); // Ensure not in single view initially
+
+        // Create and append the back button at the top of the container
+        const backButton = document.createElement('button');
+        backButton.id = 'back-to-planets-btn';
+        backButton.classList.add('button', 'back-button', 'hidden'); // Hidden by default
+        backButton.textContent = 'Back to All Planets';
+        backButton.addEventListener('click', showAllPlanets);
+        planetsContainer.appendChild(backButton);
 
         planets.forEach(planet => {
             const planetCard = document.createElement('div');
@@ -193,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Short info for initial all-planets view (always visible now)
             const planetInfoShort = document.createElement('div');
-            planetInfoShort.classList.add('planet-info-hover'); // Reusing class name, but CSS handles always-visible
+            planetInfoShort.classList.add('planet-info-short'); // Renamed class for clarity
             planetInfoShort.innerHTML = `
                 <h3>${planet.name}</h3>
                 <p>${planet.description.substring(0, 50)}...</p>
@@ -205,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Open data/planets.json
             // 2. Find the planet the ship is associated with.
             // 3. Update "ship_location": "planet_id" to the ID of the planet you want the ship to appear next to.
-            //    Set to null to make it appear next to its own planet card (default right corner).
+            //    Set to null to make it appear next to its own planet card (default top-right corner).
             // 4. Update "ship_reason": "Your battle description here."
             // 5. Save, commit, and push changes to GitHub.
             const shipImage = document.createElement('img');
@@ -217,26 +220,44 @@ document.addEventListener('DOMContentLoaded', () => {
             // Determine where the ship should be placed
             if (planet.ship_location) {
                 // Find the target planet card to append the ship to
-                const targetPlanetCard = document.querySelector(`.planet-card[data-planet-id="${planet.ship_location}"]`);
-                if (targetPlanetCard) {
-                    targetPlanetCard.appendChild(shipImage);
-                    // Position the ship relative to the target planet card
-                    shipImage.style.position = 'absolute';
-                    shipImage.style.top = '10px';
-                    shipImage.style.right = '10px'; // Position on the top right of the target planet
-                } else {
-                    // Fallback if target planet not found, place on its own card
-                    planetCard.appendChild(shipImage);
-                }
+                // Note: This query needs to be done *after* all planet cards are rendered
+                // For initial render, we'll place it on its own card and then re-position if needed by showPlanetDetail
+                planetCard.appendChild(shipImage); // Temporarily add to its own card
             } else {
                 // Default position if not linked to another planet
                 planetCard.appendChild(shipImage);
             }
 
+            // Container for detailed info (initially hidden)
+            const planetDetailContentInCard = document.createElement('div');
+            planetDetailContentInCard.classList.add('planet-detail-content-in-card');
+            planetCard.appendChild(planetDetailContentInCard);
+
+
             // Add click listener for detailed view
-            planetCard.addEventListener('click', () => showPlanetDetail(planet.id));
+            planetCard.addEventListener('click', () => {
+                if (currentActivePlanetId === planet.id) {
+                    showAllPlanets(); // If clicking the active planet, go back to all planets
+                } else {
+                    showPlanetDetail(planet.id); // Otherwise, show this planet's detail
+                }
+            });
 
             planetsContainer.appendChild(planetCard);
+        });
+
+        // After all planets are rendered, re-position ships based on ship_location
+        planets.forEach(planet => {
+            if (planet.ship_location && planet.ship_location !== planet.id) {
+                const shipElement = document.getElementById(`ship-${planet.id}`);
+                const targetPlanetCard = document.querySelector(`.planet-card[data-planet-id="${planet.ship_location}"]`);
+                if (shipElement && targetPlanetCard) {
+                    targetPlanetCard.appendChild(shipElement);
+                    shipElement.style.position = 'absolute';
+                    shipElement.style.top = '10px';
+                    shipElement.style.right = '10px';
+                }
+            }
         });
     }
 
@@ -244,53 +265,80 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedPlanet = planetsData.find(p => p.id === planetId);
         if (!selectedPlanet) return;
 
-        // Hide all planets and show detail view
+        currentActivePlanetId = planetId; // Set the active planet
+
+        // Hide back button initially, will be shown by CSS
+        document.getElementById('back-to-planets-btn').classList.remove('hidden');
+
         planetsContainer.classList.add('single-view'); // Add class to container for CSS effects
+
         document.querySelectorAll('.planet-card').forEach(card => {
-            if (card.dataset.planetId !== planetId) {
+            const cardId = card.dataset.planetId;
+            const shipElement = card.querySelector('.ship-image'); // Get ship for this card
+
+            if (cardId !== planetId) {
                 card.classList.add('inactive');
+                // If a ship is on an inactive card, ensure it also fades
+                if (shipElement) {
+                    shipElement.classList.add('inactive');
+                }
             } else {
+                card.classList.remove('inactive');
                 card.classList.add('active'); // Highlight the active planet
+                // Ensure active ship is visible
+                if (shipElement) {
+                    shipElement.classList.remove('inactive');
+                }
+
+                // Populate detailed view within this active card
+                const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
+                const shortInfoDiv = card.querySelector('.planet-info-short');
+
+                // Hide short info and show detailed info
+                if (shortInfoDiv) shortInfoDiv.classList.add('hidden');
+                if (detailContentDiv) detailContentDiv.classList.remove('hidden');
+
+                detailContentDiv.innerHTML = `
+                    <h3>${selectedPlanet.name}</h3>
+                    <p>${selectedPlanet.description}</p>
+                    <div class="control-info">
+                        <h4>Current Control:</h4>
+                        ${selectedPlanet.factions_control.map(fc => `<p style="color:${fc.color};"><strong>${fc.faction}:</strong> ${fc.percentage}%</p>`).join('')}
+                    </div>
+                    ${selectedPlanet.ship_reason ? `
+                        <div class="battle-info">
+                            <h4>Current Battle:</h4>
+                            <p>${selectedPlanet.ship_reason}</p>
+                        </div>
+                    ` : ''}
+                `;
             }
         });
-
-        // Populate detail view
-        planetDetailContent.innerHTML = `
-            <div class="planet-image-container">
-                <img class="planet-image" src="${selectedPlanet.image}" alt="${selectedPlanet.name}">
-                ${selectedPlanet.factions_control.map(fc => `
-                    <div class="planet-overlay-segment" style="height: ${fc.percentage}%; background-color: ${fc.color}CC; bottom: ${selectedPlanet.factions_control.slice(0, selectedPlanet.factions_control.indexOf(fc)).reduce((sum, prevFc) => sum + prevFc.percentage, 0)}%;"></div>
-                `).join('')}
-                ${selectedPlanet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0) < 100 ? `
-                    <div class="planet-overlay-segment" style="height: ${100 - selectedPlanet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0)}%; background-color: rgba(0, 0, 0, 0.2); bottom: ${selectedPlanet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0)}%;"></div>
-                ` : ''}
-            </div>
-            <div class="text-content">
-                <h3>${selectedPlanet.name}</h3>
-                <p>${selectedPlanet.description}</p>
-                <div class="control-info">
-                    <h4>Current Control:</h4>
-                    ${selectedPlanet.factions_control.map(fc => `<p style="color:${fc.color};"><strong>${fc.faction}:</strong> ${fc.percentage}%</p>`).join('')}
-                </div>
-                ${selectedPlanet.ship_reason ? `
-                    <div class="battle-info">
-                        <h4>Current Battle:</h4>
-                        <p>${selectedPlanet.ship_reason}</p>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        planetsContainer.classList.add('hidden'); // Hide the grid of planets
-        planetDetailView.classList.remove('hidden'); // Show the detailed view
     }
 
     function showAllPlanets() {
-        planetsContainer.classList.remove('hidden', 'single-view');
+        currentActivePlanetId = null; // Clear active planet
+
+        document.getElementById('back-to-planets-btn').classList.add('hidden'); // Hide back button
+
+        planetsContainer.classList.remove('single-view'); // Remove single view class
+
         document.querySelectorAll('.planet-card').forEach(card => {
-            card.classList.remove('inactive', 'active');
+            card.classList.remove('inactive', 'active'); // Remove active/inactive classes
+            const shipElement = card.querySelector('.ship-image');
+            if (shipElement) {
+                shipElement.classList.remove('inactive'); // Ensure all ships are visible
+            }
+
+            // Restore short info and hide detailed info
+            const shortInfoDiv = card.querySelector('.planet-info-short');
+            const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
+            if (shortInfoDiv) shortInfoDiv.classList.remove('hidden');
+            if (detailContentDiv) {
+                detailContentDiv.classList.add('hidden');
+                detailContentDiv.innerHTML = ''; // Clear content
+            }
         });
-        planetDetailView.classList.add('hidden');
     }
 
 
