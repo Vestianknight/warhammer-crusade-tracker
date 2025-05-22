@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // IMPORTANT: This is a client-side password and is NOT secure.
     // Anyone can view the source code to find it.
     // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const CORRECT_PASSWORD = "1234"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
     passwordSubmit.addEventListener('click', checkPassword);
     passwordInput.addEventListener('keypress', (e) => {
