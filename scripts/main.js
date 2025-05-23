@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let armiesData = [];
     let planetsData = [];
 
-    // --- DOM Elements for Sections ---
+    // --- DOM Elements for Sections (only relevant for index.html) ---
     const passwordOverlay = document.getElementById('password-overlay');
     const mainContent = document.getElementById('main-content');
     const factionProgressSection = document.getElementById('faction-progress-section');
@@ -12,23 +12,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const planetaryControlSection = document.getElementById('planetary-control-section');
     const resourcesSection = document.getElementById('resources-section');
 
-    const armyListOverview = document.getElementById('army-list-overview'); // This will hold the army cards
+    const armyListOverview = document.getElementById('army-list-overview');
     const armyDetailPageContainer = document.getElementById('army-detail-page-container');
     const armyDetailContent = document.getElementById('army-detail-content');
-    const backToRosterBtn = document.getElementById('back-to-roster-btn'); // Get the back button element
+    const backToRosterBtn = document.getElementById('back-to-roster-btn');
 
-    // --- Faction Filter Elements ---
+    // --- Faction Filter Elements (only relevant for index.html) ---
     const factionFilterDropdown = document.getElementById('faction-filter');
 
 
     // --- Password Protection (TEMPORARILY BYPASSED FOR DEVELOPMENT) ---
+    // This logic only applies to index.html
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
     const CORRECT_PASSWORD = "crusade";
 
-    passwordOverlay.classList.add('hidden');
-    mainContent.style.display = 'block';
-    initializeCrusadeTracker();
+    // Only attempt to show/hide password overlay if it exists (i.e., on index.html)
+    if (passwordOverlay && mainContent) {
+        passwordOverlay.classList.add('hidden');
+        mainContent.style.display = 'block';
+    }
+
+    // Initialize the tracker only if on index.html
+    if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html')) {
+        initializeCrusadeTracker();
+    } else {
+        // For other pages (schedule.html, admin.html), just start version check
+        setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
+    }
 
 
     // --- Helper for generating consistent colors for armies ---
@@ -43,33 +54,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return color;
     }
 
-    // --- Router Function ---
+    // --- Router Function (only for internal index.html views) ---
     function router() {
         const hash = window.location.hash;
         console.log('Current hash:', hash);
 
-        // Hide all main sections by default
-        factionProgressSection.classList.add('hidden');
-        armyRosterSection.classList.add('hidden');
-        planetaryControlSection.classList.add('hidden');
-        resourcesSection.classList.add('hidden');
+        // Ensure these elements exist before trying to manipulate them
+        if (factionProgressSection && armyRosterSection && planetaryControlSection && resourcesSection) {
+            // Hide all main sections by default
+            factionProgressSection.classList.add('hidden');
+            armyRosterSection.classList.add('hidden');
+            planetaryControlSection.classList.add('hidden');
+            resourcesSection.classList.add('hidden');
 
-        // Reset army detail view state
-        armyListOverview.classList.remove('hidden');
-        armyDetailPageContainer.classList.add('hidden');
-        armyDetailContent.innerHTML = ''; // Clear previous detail content
+            // Reset army detail view state
+            armyListOverview.classList.remove('hidden');
+            armyDetailPageContainer.classList.add('hidden');
+            armyDetailContent.innerHTML = ''; // Clear previous detail content
 
-        if (hash.startsWith('#army-')) {
-            const armyId = hash.substring(6); // Remove '#army-' prefix
-            renderArmyDetailPage(armyId);
-            armyRosterSection.classList.remove('hidden'); // Show the army section
-        } else {
-            // Default view: show all main sections
-            factionProgressSection.classList.remove('hidden');
-            armyRosterSection.classList.remove('hidden');
-            planetaryControlSection.classList.remove('hidden');
-            resourcesSection.classList.remove('hidden');
-            filterArmies(factionFilterDropdown.value); // Re-render with current filter
+            if (hash.startsWith('#army-')) {
+                const armyId = hash.substring(6); // Remove '#army-' prefix
+                renderArmyDetailPage(armyId);
+                armyRosterSection.classList.remove('hidden'); // Show the army section
+            } else {
+                // Default view: show all main sections
+                factionProgressSection.classList.remove('hidden');
+                armyRosterSection.classList.remove('hidden');
+                planetaryControlSection.classList.remove('hidden');
+                resourcesSection.classList.remove('hidden');
+                filterArmies(factionFilterDropdown.value); // Re-render with current filter
+            }
         }
     }
 
@@ -79,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkAppVersion() {
         try {
-            const response = await fetch('data/version.json');
+            // Add a cache-busting parameter to ensure we always get the latest version.json
+            const response = await fetch(`data/version.json?t=${new Date().getTime()}`);
             const data = await response.json();
             const latestVersion = data.version;
 
@@ -93,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Main Application Initialization ---
+    // --- Main Application Initialization (only for index.html) ---
     async function initializeCrusadeTracker() {
         console.log("Crusade Tracker Initialized!");
 
@@ -113,7 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Data loaded:', { factionsData, armiesData, planetsData, currentAppVersion });
 
             // Populate faction filter dropdown
-            populateFactionFilter(factionsData);
+            if (factionFilterDropdown) { // Ensure dropdown exists before populating
+                populateFactionFilter(factionsData);
+            }
 
             // Initial render of components
             renderFactionChart(factionsData, armiesData);
@@ -124,23 +141,29 @@ document.addEventListener('DOMContentLoaded', () => {
             router(); // Call router once on load to handle initial URL
 
             // Set up filter event listener
-            factionFilterDropdown.addEventListener('change', (event) => {
-                filterArmies(event.target.value);
-            });
+            if (factionFilterDropdown) { // Ensure dropdown exists before adding listener
+                factionFilterDropdown.addEventListener('change', (event) => {
+                    filterArmies(event.target.value);
+                });
+            }
 
             // FIX: Add event listener for the "Back to All Armies" button
-            backToRosterBtn.addEventListener('click', () => {
-                window.location.hash = ''; // Clear the hash to go back to the default view
-            });
+            if (backToRosterBtn) { // Ensure button exists before adding listener
+                backToRosterBtn.addEventListener('click', () => {
+                    window.location.hash = ''; // Clear the hash to go back to the default view
+                });
+            }
 
             // Start periodic version check
             setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 
         } catch (error) {
             console.error('Error loading data:', error);
-            mainContent.innerHTML = `<p style="color: red; text-align: center;">
-                                        Failed to load campaign data. Please check the data files and try again.
-                                    </p>`;
+            if (mainContent) {
+                mainContent.innerHTML = `<p style="color: red; text-align: center;">
+                                            Failed to load campaign data. Please check the data files and try again.
+                                        </p>`;
+            }
         }
     }
 
@@ -166,7 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Faction Progress Stacked Bar Graph ---
     function renderFactionChart(factions, armies) {
-        const ctx = document.getElementById('factionBarChart').getContext('2d');
+        const ctx = document.getElementById('factionBarChart');
+        if (!ctx) return; // Ensure canvas exists
 
         const factionLabels = factions.map(f => f.name);
         const factionIndexMap = new Map(factionLabels.map((name, index) => [name, index]));
@@ -273,6 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Army List Overview (main page) ---
     function renderArmyListOverview(armiesToRender) {
+        if (!armyListOverview) return; // Ensure element exists
+
         armyListOverview.innerHTML = ''; // Clear previous content
         armyListOverview.classList.remove('hidden'); // Ensure visible
         armyDetailPageContainer.classList.add('hidden'); // Ensure detail page is hidden
@@ -303,6 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Army Detail Page ---
     function renderArmyDetailPage(armyId) {
+        if (!armyDetailContent || !armyListOverview || !armyDetailPageContainer) return; // Ensure elements exist
+
         const army = armiesData.find(a => a.id === armyId);
         if (!army) {
             armyDetailContent.innerHTML = `<p style="color: red;">Army not found!</p>`;
@@ -332,6 +360,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentActivePlanetId = null; // To track which planet is in detail view
 
     function renderPlanets(planets) {
+        if (!planetsContainer) return; // Ensure element exists
+
         planetsContainer.innerHTML = ''; // Clear previous content
         planetsContainer.classList.remove('single-view'); // Ensure not in single view initially
 
@@ -425,6 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showPlanetDetail(planetId) {
+        if (!planetsContainer) return; // Ensure element exists
+
         const selectedPlanet = planetsData.find(p => p.id === planetId);
         if (!selectedPlanet) return;
 
@@ -478,6 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showAllPlanets() {
+        if (!planetsContainer) return; // Ensure element exists
+
         currentActivePlanetId = null; // Clear active planet
 
         document.getElementById('back-to-planets-btn').classList.add('hidden'); // Hide back button

@@ -47,6 +47,37 @@ body {
     color: #b0b0b0;
 }
 
+/* Main Navigation */
+.main-nav {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow links to wrap on small screens */
+    gap: 1rem; /* Space between links */
+}
+
+.main-nav a {
+    color: #e0e0e0;
+    text-decoration: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 5px;
+    background-color: #0f3460;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+    white-space: nowrap; /* Prevent links from breaking */
+}
+
+.main-nav a:hover {
+    background-color: #164a80;
+    transform: translateY(-2px);
+}
+
+.main-nav a.active {
+    background-color: #e94560; /* Highlight active page */
+    color: #1a1a2e;
+}
+
+
 /* Sections */
 .section {
     background-color: #2a2a4a;
@@ -294,7 +325,7 @@ body {
     height: 150px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin-bottom: 1rem; /* Add back margin since side ships are gone */
     border: 3px solid #0f3460;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
@@ -659,11 +690,11 @@ body {
     /* Army Detail Page Text Alignment Fix (Desktop Specific) */
     .army-detail-page-container #army-detail-content {
         flex-direction: column; /* Keep as column for content within */
-        align-items: flex-start; /* Align content to the left within its div */
-        text-align: left; /* Ensure text is left-aligned on desktop */
+        align-items: center; /* Center content within its div */
+        text-align: center; /* Center text within content */
     }
     .army-detail-page-container #army-detail-content h3,
     .army-detail-page-container #army-detail-content p {
-        text-align: left; /* Ensure all text is left-aligned on desktop */
+        text-align: center; /* Ensure all text is centered on desktop */
     }
 }
