@@ -17,28 +17,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const armyDetailContent = document.getElementById('army-detail-content');
     const backToRosterBtn = document.getElementById('back-to-roster-btn');
 
-    // --- Password Protection ---
+    // --- Password Protection (TEMPORARILY BYPASSED FOR DEVELOPMENT) ---
+    // The password elements are still in HTML, but JS will ignore them for now.
+    // To re-enable password:
+    // 1. Uncomment the passwordSubmit.addEventListener and passwordInput.addEventListener lines below.
+    // 2. Comment out the two lines that hide passwordOverlay and call initializeCrusadeTracker directly.
+    // 3. Ensure the checkPassword function is active and correctly handles password logic.
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
     const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
 
-    passwordSubmit.addEventListener('click', checkPassword);
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            checkPassword();
-        }
-    });
+    // passwordSubmit.addEventListener('click', checkPassword);
+    // passwordInput.addEventListener('keypress', (e) => {
+    //     if (e.key === 'Enter') {
+    //         checkPassword();
+    //     }
+    // });
 
-    function checkPassword() {
-        if (passwordInput.value === CORRECT_PASSWORD) {
-            passwordOverlay.classList.add('hidden');
-            mainContent.style.display = 'block'; // Show the main content
-            initializeCrusadeTracker(); // Initialize the rest of the app
-        } else {
-            alert("Incorrect password. Access denied."); // Using alert for simplicity, but for production, use a custom modal.
-            passwordInput.value = ''; // Clear input
-        }
-    }
+    // function checkPassword() {
+    //     if (passwordInput.value === CORRECT_PASSWORD) {
+    //         passwordOverlay.classList.add('hidden');
+    //         mainContent.style.display = 'block'; // Show the main content
+    //         initializeCrusadeTracker(); // Initialize the rest of the app
+    //     } else {
+    //         alert("Incorrect password. Access denied."); // Using alert for simplicity, but for production, use a custom modal.
+    //         passwordInput.value = ''; // Clear input
+    //     }
+    // }
+
+    // --- AUTOMATIC INITIALIZATION (PASSWORD BYPASSED) ---
+    passwordOverlay.classList.add('hidden'); // Hide the overlay immediately
+    mainContent.style.display = 'block'; // Show main content immediately
+    initializeCrusadeTracker(); // Start the app without password check
+
 
     // --- Helper for generating consistent colors for armies ---
     const colors = [
@@ -52,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return color;
     }
 
-    // --- Router Function (MOVED HERE TO BE DEFINED BEFORE initializeCrusadeTracker CALLS IT) ---
+    // --- Router Function ---
     function router() {
         const hash = window.location.hash;
         console.log('Current hash:', hash);
