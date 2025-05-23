@@ -1,3 +1,6 @@
+// admin.js
+// This script handles the password protection for the admin page.
+
 document.addEventListener('DOMContentLoaded', () => {
     const passwordOverlay = document.getElementById('admin-password-overlay');
     const passwordInput = document.getElementById('admin-password-input');
@@ -21,8 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 passwordOverlay.classList.add('hidden');
                 adminContent.style.display = 'block'; // Show content
                 passwordInput.value = ''; // Clear password field
+                // NEW: Call the function from admin_data.js to load and render army data
+                if (window.loadAdminArmies) {
+                    window.loadAdminArmies();
+                } else {
+                    console.error('Admin: loadAdminArmies function not found. Is admin_data.js loaded correctly?');
+                }
             } else {
-                // Changed alert message color to white for consistency
                 alert("Incorrect password. Access denied.");
                 passwordInput.value = ''; // Clear password field
             }
@@ -36,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Add event listeners for the new "Back to Home" buttons
+    // Add event listeners for the "Back to Home" buttons
     if (backToHomeOverlayBtn) {
         backToHomeOverlayBtn.addEventListener('click', () => {
             window.location.href = 'index.html'; // Redirect to the home page

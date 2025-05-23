@@ -682,8 +682,6 @@ body {
     height: auto;
 }
 
-/* Removed .ship-info-popup styles as it's no longer an HTML element */
-
 /* --- Weekly Battles Schedule Table Styles --- */
 .weekly-battles-schedule {
     width: 100%;
@@ -745,71 +743,89 @@ body {
     color: var(--auspex-green-dark);
 }
 
+/* --- Admin Page Specific Styles --- */
+.army-admin-list {
+    /* Inherits grid-container styles */
+    display: grid; /* Ensure it's a grid */
+    gap: 1.5rem; /* Space between cards */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+}
+
+.army-admin-card {
+    background-color: var(--transparent-bg-light);
+    border: 1px solid var(--auspex-green-dark);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Space between form groups */
+}
+
+.army-admin-card h3 {
+    color: var(--auspex-green-light);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
+}
+
+.admin-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.admin-field-group label {
+    color: var(--auspex-medium-grey);
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.admin-input,
+.admin-textarea {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--auspex-green-dark);
+    border-radius: 3px;
+    background-color: var(--transparent-bg-very-dark);
+    color: var(--auspex-light-grey);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    box-sizing: border-box; /* Include padding in width */
+    box-shadow: inset 0 0 3px rgba(57, 255, 20, 0.2);
+    transition: all 0.2s ease;
+}
+
+.admin-input:focus,
+.admin-textarea:focus {
+    outline: none;
+    border-color: var(--auspex-green-light);
+    box-shadow: inset 0 0 5px rgba(57, 255, 20, 0.6), 0 0 5px rgba(57, 255, 20, 0.4);
+}
+
+.admin-textarea {
+    min-height: 80px;
+    resize: vertical; /* Allow vertical resizing */
+}
+
+.admin-field-group.full-width {
+    grid-column: 1 / -1; /* Make notes textarea span full width in grid */
+}
+
+.save-army-button {
+    margin-top: 1.5rem;
+    align-self: center; /* Center the button within the flex column */
+}
+
 /* Responsive Adjustments */
 @media (max-width: 767px) {
     /* ... (existing mobile adjustments) ... */
-    .battle-schedule-table {
-        font-size: 0.8rem;
-        display: block;
-        width: 100%;
-    }
-
-    .battle-schedule-table thead,
-    .battle-schedule-table tbody,
-    .battle-schedule-table th,
-    .battle-schedule-table td,
-    .battle-schedule-table tr {
-        display: block;
-    }
-
-    .battle-schedule-table thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-    }
-
-    .battle-schedule-table tr {
-        border: 1px solid rgba(57, 255, 20, 0.2);
-        margin-bottom: 0.5rem;
-        border-radius: 5px;
-    }
-
-    .battle-schedule-table td {
-        border: none;
-        border-bottom: 1px solid rgba(57, 255, 20, 0.1);
-        position: relative;
-        padding-left: 50%;
-        text-align: right;
-    }
-
-    .battle-schedule-table td:before {
-        content: attr(data-label);
-        position: absolute;
-        left: 6px;
-        width: 45%;
-        padding-right: 10px;
-        white-space: nowrap;
-        font-weight: bold;
-        color: var(--auspex-green-light);
-        text-align: left;
-    }
-
-    /* Specific labels for each column on mobile */
-    .battle-schedule-table td:nth-of-type(1):before { content: "Battle #"; }
-    .battle-schedule-table td:nth-of-type(2):before { content: "Army 1"; }
-    .battle-schedule-table td:nth-of-type(3):before { content: ""; }
-    .battle-schedule-table td:nth-of-type(4):before { content: "Army 2"; }
-    .battle-schedule-table td:nth-of-type(5):before { content: "Status"; }
-
-    .battle-schedule-table .vs-cell {
-        text-align: right;
+    .army-admin-list {
+        grid-template-columns: 1fr; /* Single column on small screens */
     }
 }
 
 @media (min-width: 768px) {
     /* ... (existing desktop adjustments) ... */
-    .battle-schedule-table th,
-    .battle-schedule-table td {
-        white-space: normal;
-    }
 }
