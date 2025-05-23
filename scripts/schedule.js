@@ -1,14 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('sector-auspex-canvas');
     const ctx = canvas.getContext('2d');
-    const shipInfoPopup = document.getElementById('ship-info-popup');
     const weeklyBattlesSchedule = document.getElementById('weekly-battles-schedule');
+    const battleArmyFilterDropdown = document.getElementById('battle-army-filter'); // New dropdown
 
     let planetsData = [];
     let armiesData = [];
     let planet1Image = new Image();
     const loadedShipImages = {}; // Cache for specific ship images (ship1.png to ship10.png)
     let activeShips = []; // To store ship positions and data for interaction
+    let generatedBattles = []; // Store all generated battles
+
+    let hoveredShip = null; // Track currently hovered ship for canvas drawing
 
     // --- Data Loading ---
     async function loadData() {
@@ -29,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load specific ship images (ship1.png to ship10.png)
             const shipImagePromises = [];
-            for (let i = 0; i < armiesData.length && i < 10; i++) { // Load up to 10 ships, matching armies
+            // Assuming armiesData has at least 10 armies for 10 ships
+            for (let i = 0; i < armiesData.length && i < 10; i++) {
                 const shipNum = i + 1;
                 const img = new Image();
                 img.src = `images/ship${shipNum}.png`; // Assuming ship1.png, ship2.png, etc.
@@ -38,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     img.onload = resolve;
                     img.onerror = () => {
                         console.warn(`Failed to load ship image: ${img.src}. Using placeholder.`);
-                        // Fallback to a simple colored square if image fails to load
-                        img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23505050"/><text x="50" y="50" font-family="sans-serif" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">SHIP</text></svg>';
+                        // Fallback to a simple colored square with text if image fails to load
+                        img.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23505050"/><text x="50" y="50" font-family="sans-serif" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">SHIP${shipNum}</text></svg>`;
                         resolve();
                     };
                 }));
@@ -47,8 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
             await Promise.all(shipImagePromises);
 
             console.log('Schedule page data loaded:', { planetsData, armiesData, loadedShipImages });
-            renderScene();
-            renderWeeklyBattles();
+
+            // Populate the battle filter dropdown
+            populateBattleArmyFilter(armiesData);
+
+            // Generate battles once after data is loaded
+            generatedBattles = generateBattles(armiesData, 3); // Each army has 3 matches
+            console.log('Generated Battles:', generatedBattles);
+
+            // Initial render
+            resizeCanvas(); // This will call renderScene
+            renderWeeklyBattles(generatedBattles); // Render all battles initially
+
         } catch (error) {
             console.error('Error loading data for schedule page:', error);
             if (canvas) canvas.style.display = 'none';
@@ -60,29 +74,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function resizeCanvas() {
         const container = canvas.parentElement;
         canvas.width = container.clientWidth;
-        canvas.height = Math.min(container.clientWidth * 0.75, 600);
+        // Maintain aspect ratio, but ensure it's not too small or too large
+        canvas.height = Math.min(container.clientWidth * 0.7, 600); // Adjusted aspect ratio for more vertical space
         renderScene();
     }
 
     function renderScene() {
         if (!ctx || !planet1Image.complete) return;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
         const planet = planetsData.find(p => p.id === 'planet1');
         if (!planet) return;
 
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const planetRadius = Math.min(canvas.width, canvas.height) * 0.2;
-        const shipCircleRadius = planetRadius * 1.6;
-        const shipSize = planetRadius * 0.3; // Slightly larger for better detail
+        const planetRadius = Math.min(canvas.width, canvas.height) * 0.25; // Planet slightly bigger
+        const shipCircleRadius = planetRadius * 1.8; // Ships further out
+        const shipSize = planetRadius * 0.4; // Ships a little bigger
 
         // Draw Planet 1
         ctx.save();
         ctx.beginPath();
         ctx.arc(centerX, centerY, planetRadius, 0, Math.PI * 2);
-        ctx.clip();
+        ctx.clip(); // Clip to the circle
         ctx.drawImage(planet1Image, centerX - planetRadius, centerY - planetRadius, planetRadius * 2, planetRadius * 2);
         ctx.restore();
 
@@ -94,16 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.shadowColor = 'var(--auspex-green-light)';
         ctx.shadowBlur = 10;
         ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0; // Reset shadow
 
-        activeShips = [];
+        activeShips = []; // Clear previous ship data
 
         // Draw Ships and Lines
         const armiesToDisplay = armiesData.slice(0, 10); // Use up to 10 armies for the visual
         const totalArmies = armiesToDisplay.length;
 
         armiesToDisplay.forEach((army, index) => {
-            const angle = (Math.PI * 2 / totalArmies) * index - (Math.PI / 2);
+            const angle = (Math.PI * 2 / totalArmies) * index - (Math.PI / 2); // Start at top, rotate clockwise
 
             const shipX = centerX + shipCircleRadius * Math.cos(angle);
             const shipY = centerY + shipCircleRadius * Math.sin(angle);
@@ -117,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const planetEdgeX = centerX - (dx / dist) * planetRadius;
             const planetEdgeY = centerY - (dy / dist) * planetRadius;
             ctx.lineTo(planetEdgeX, planetEdgeY);
-            ctx.strokeStyle = 'rgba(57, 255, 20, 0.4)';
+            ctx.strokeStyle = 'rgba(57, 255, 20, 0.4)'; // Fainter green line
             ctx.lineWidth = 1;
             ctx.stroke();
 
@@ -135,14 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 x: drawX,
                 y: drawY,
                 width: shipSize,
-                height: shipSize
+                height: shipSize,
+                centerX: shipX, // Store center for text positioning
+                centerY: shipY
             });
         });
+
+        // Draw info for the currently hovered ship
+        if (hoveredShip) {
+            drawShipInfoOnCanvas(hoveredShip, hoveredShip.centerX, hoveredShip.centerY, shipSize);
+        }
     }
 
-    // --- Interactivity (Hover/Tap) ---
-    let hoveredShip = null;
-
+    // --- On-Canvas Interactivity (Hover/Tap) ---
     function getShipAtCoordinates(coordX, coordY) {
         for (const ship of activeShips) {
             if (coordX >= ship.x && coordX <= ship.x + ship.width &&
@@ -153,20 +173,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    function showPopup(ship, x, y) {
-        shipInfoPopup.innerHTML = `
-            <strong>${ship.name}</strong><br>
-            <span>Player: ${ship.player}</span>
-        `;
-        shipInfoPopup.style.left = `${x + 10}px`;
-        shipInfoPopup.style.top = `${y + 10}px`;
-        shipInfoPopup.classList.remove('hidden');
+    function drawShipInfoOnCanvas(ship, shipX, shipY, shipSize) {
+        const textOffset = shipSize / 2 + 10; // Offset text from ship image
+        const textX = shipX;
+        let textY = shipY - textOffset; // Start above the ship
+
+        ctx.font = 'bold 14px "Inter"';
+        ctx.fillStyle = 'var(--auspex-green-light)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.shadowColor = 'var(--auspex-green-light)';
+        ctx.shadowBlur = 8;
+
+        const armyName = ship.name;
+        const playerName = `Player: ${ship.player}`;
+
+        // Measure text for background rectangle
+        const nameWidth = ctx.measureText(armyName).width;
+        const playerWidth = ctx.measureText(playerName).width;
+        const maxWidth = Math.max(nameWidth, playerWidth);
+
+        const padding = 8;
+        const rectWidth = maxWidth + padding * 2;
+        const rectHeight = 30 + padding * 2; // Height for two lines of text
+
+        // Adjust textY to draw player name below army name
+        ctx.fillText(armyName, textX, textY);
+        ctx.font = '12px "Inter"'; // Smaller font for player name
+        ctx.fillStyle = 'var(--auspex-light-grey)';
+        ctx.textBaseline = 'top';
+        ctx.fillText(playerName, textX, textY + 4); // Player name below army name
+
+        ctx.shadowBlur = 0; // Reset shadow
     }
 
-    function hidePopup() {
-        shipInfoPopup.classList.add('hidden');
-        shipInfoPopup.innerHTML = '';
-    }
 
     canvas.addEventListener('mousemove', (event) => {
         const rect = canvas.getBoundingClientRect();
@@ -177,21 +217,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentShip && currentShip !== hoveredShip) {
             hoveredShip = currentShip;
-            showPopup(currentShip, mouseX, mouseY);
+            renderScene(); // Redraw to show new hovered ship info
         } else if (!currentShip && hoveredShip) {
             hoveredShip = null;
-            hidePopup();
+            renderScene(); // Redraw to hide ship info
         }
     });
 
     canvas.addEventListener('mouseleave', () => {
-        hoveredShip = null;
-        hidePopup();
+        if (hoveredShip) {
+            hoveredShip = null;
+            renderScene(); // Redraw to hide ship info
+        }
     });
 
     // For touch devices (tap to show/hide)
     canvas.addEventListener('touchstart', (event) => {
-        event.preventDefault();
+        event.preventDefault(); // Prevent scrolling on touch
         const rect = canvas.getBoundingClientRect();
         const touchX = event.touches[0].clientX - rect.left;
         const touchY = event.touches[0].clientY - rect.top;
@@ -200,81 +242,113 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (tappedShip) {
             if (hoveredShip && hoveredShip.id === tappedShip.id) {
+                // Tapped the same ship again, hide info
                 hoveredShip = null;
-                hidePopup();
             } else {
                 hoveredShip = tappedShip;
-                showPopup(tappedShip, touchX, touchY);
             }
-        } else {
+            renderScene(); // Redraw to update info display
+        } else if (hoveredShip) {
+            // Tapped outside any ship, hide info
             hoveredShip = null;
-            hidePopup();
+            renderScene(); // Redraw to hide info
         }
     });
 
-    // --- Weekly Battles Schedule ---
-    function renderWeeklyBattles() {
-        // Generate battles ensuring each army has 3 matches
-        const allArmies = armiesData.map(army => ({ id: army.id, name: army.name, player: army.player }));
+    // --- Battle Generation Logic ---
+    function generateBattles(armies, matchesPerArmy) {
+        const allArmies = armies.map(army => ({ id: army.id, name: army.name, player: army.player }));
         const battles = [];
-        const armyMatchCount = {}; // Track matches per army
+        const armyMatchCount = {};
+        const armyOpponents = {}; // To track who each army has fought
 
-        // Initialize match counts for all armies
-        allArmies.forEach(army => armyMatchCount[army.id] = 0);
+        allArmies.forEach(army => {
+            armyMatchCount[army.id] = 0;
+            armyOpponents[army.id] = new Set();
+        });
 
-        let battleId = 1;
+        let battleIdCounter = 1;
         let attempts = 0;
-        const maxAttempts = 1000; // Prevent infinite loops
+        const maxAttempts = allArmies.length * matchesPerArmy * 2; // Safety break
 
-        while (battles.length < (allArmies.length * 3) / 2 && attempts < maxAttempts) { // (total armies * matches per army) / 2 armies per battle
+        while (Object.values(armyMatchCount).some(count => count < matchesPerArmy) && attempts < maxAttempts) {
             attempts++;
 
-            // Select two random armies that need more matches
-            const eligibleArmies = allArmies.filter(army => armyMatchCount[army.id] < 3);
+            // Get armies that still need matches
+            const potentialParticipants = allArmies.filter(army => armyMatchCount[army.id] < matchesPerArmy);
 
-            if (eligibleArmies.length < 2) {
-                if (eligibleArmies.length === 1 && armyMatchCount[eligibleArmies[0].id] < 3) {
-                    // One army left, try to pair it with someone who still has matches to give
-                    const potentialOpponent = allArmies.find(a => a.id !== eligibleArmies[0].id && armyMatchCount[a.id] < 3);
-                    if (potentialOpponent) {
-                         eligibleArmies.push(potentialOpponent);
+            if (potentialParticipants.length < 2) {
+                // If only one army left, try to pair it with someone who still has capacity
+                if (potentialParticipants.length === 1 && armyMatchCount[potentialParticipants[0].id] < matchesPerArmy) {
+                    const soloArmy = potentialParticipants[0];
+                    const possibleOpponent = allArmies.find(
+                        a => a.id !== soloArmy.id &&
+                             armyMatchCount[a.id] < matchesPerArmy &&
+                             !armyOpponents[soloArmy.id].has(a.id)
+                    );
+                    if (possibleOpponent) {
+                        potentialParticipants.push(possibleOpponent);
                     }
                 }
-                if (eligibleArmies.length < 2) break; // Cannot form another battle
+                if (potentialParticipants.length < 2) break; // Cannot form more battles
             }
 
-            // Shuffle eligible armies and pick the first two
-            eligibleArmies.sort(() => Math.random() - 0.5);
-            const army1 = eligibleArmies[0];
-            const army2 = eligibleArmies[1];
+            // Shuffle and pick two armies
+            potentialParticipants.sort(() => Math.random() - 0.5);
+            let army1 = potentialParticipants[0];
+            let army2 = potentialParticipants[1];
 
-            // Ensure they haven't fought before in this generated set (simple check)
-            const alreadyFought = battles.some(b =>
-                (b.army1Id === army1.id && b.army2Id === army2.id) ||
-                (b.army1Id === army2.id && b.army2Id === army1.id)
-            );
+            // Ensure they haven't fought each other yet in this set
+            if (armyOpponents[army1.id].has(army2.id) || armyOpponents[army2.id].has(army1.id)) {
+                continue; // Try again
+            }
 
-            if (!alreadyFought) {
+            // Ensure both armies still need matches
+            if (armyMatchCount[army1.id] < matchesPerArmy && armyMatchCount[army2.id] < matchesPerArmy) {
                 battles.push({
-                    id: battleId++,
-                    army1: `${army1.name} (${army1.player})`,
-                    army2: `${army2.name} (${army2.player})`,
-                    army1Id: army1.id, // Store IDs for check
-                    army2Id: army2.id,
+                    id: battleIdCounter++,
+                    army1: army1,
+                    army2: army2,
                     outcome: 'Undecided'
                 });
                 armyMatchCount[army1.id]++;
                 armyMatchCount[army2.id]++;
+                armyOpponents[army1.id].add(army2.id);
+                armyOpponents[army2.id].add(army1.id);
             }
         }
+        return battles;
+    }
 
-        // Sort battles by ID for consistent display
-        battles.sort((a, b) => a.id - b.id);
+    // --- Battle Filter Dropdown ---
+    function populateBattleArmyFilter(armies) {
+        battleArmyFilterDropdown.innerHTML = '<option value="all">All Armies</option>';
+        armies.forEach(army => {
+            const option = document.createElement('option');
+            option.value = army.id;
+            option.textContent = `${army.name} (${army.player})`;
+            battleArmyFilterDropdown.appendChild(option);
+        });
 
+        battleArmyFilterDropdown.addEventListener('change', (event) => {
+            const selectedArmyId = event.target.value;
+            let filteredBattles = generatedBattles;
+
+            if (selectedArmyId !== 'all') {
+                filteredBattles = generatedBattles.filter(battle =>
+                    battle.army1.id === selectedArmyId || battle.army2.id === selectedArmyId
+                );
+            }
+            renderWeeklyBattles(filteredBattles, selectedArmyId);
+        });
+    }
+
+    // --- Weekly Battles Schedule Table ---
+    function renderWeeklyBattles(battlesToRender, selectedArmyId = 'all') {
         weeklyBattlesSchedule.innerHTML = ''; // Clear previous content
 
-        if (battles.length === 0) {
-            weeklyBattlesSchedule.innerHTML = '<p style="text-align: center; color: var(--auspex-medium-grey);">No battles scheduled for this week.</p>';
+        if (battlesToRender.length === 0) {
+            weeklyBattlesSchedule.innerHTML = '<p style="text-align: center; color: var(--auspex-medium-grey);">No battles found for this selection.</p>';
             return;
         }
 
@@ -294,14 +368,23 @@ document.addEventListener('DOMContentLoaded', () => {
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        battles.forEach(battle => {
+        let armySpecificBattleCount = 0; // For per-army numbering
+
+        battlesToRender.forEach(battle => {
             const row = document.createElement('tr');
+
+            let displayBattleNumber = battle.id;
+            if (selectedArmyId !== 'all') {
+                armySpecificBattleCount++;
+                displayBattleNumber = armySpecificBattleCount;
+            }
+
             row.innerHTML = `
-                <td>${battle.id}</td>
-                <td>${battle.army1}</td>
-                <td class="vs-cell">VS</td>
-                <td>${battle.army2}</td>
-                <td class="status-cell">${battle.outcome}</td>
+                <td data-label="Battle #">${displayBattleNumber}</td>
+                <td data-label="Army 1">${battle.army1.name} (${battle.army1.player})</td>
+                <td data-label="" class="vs-cell">VS</td>
+                <td data-label="Army 2">${battle.army2.name} (${battle.army2.player})</td>
+                <td data-label="Status" class="status-cell">${battle.outcome}</td>
             `;
             tbody.appendChild(row);
         });

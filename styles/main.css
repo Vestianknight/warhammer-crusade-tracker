@@ -515,12 +515,12 @@ body {
 
 
 /* Army Overview Dropdown */
-.army-filter-controls {
+.army-filter-controls, .battle-filter-controls { /* Apply to both filters */
     text-align: center;
     margin-bottom: 1.5rem;
 }
 
-.army-filter-controls label {
+.army-filter-controls label, .battle-filter-controls label {
     font-size: 1.1rem;
     margin-right: 0.5rem;
     color: var(--auspex-green-light);
@@ -656,6 +656,93 @@ body {
     font-size: 0.8rem;
     color: var(--auspex-medium-grey); /* Use lighter grey for warning text */
     margin-top: 1.5rem;
+}
+
+/* --- New Styles for Schedule Page Visuals --- */
+.auspex-display-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--transparent-bg-very-dark);
+    border: 1px solid var(--auspex-green-dark);
+    border-radius: 5px;
+    box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.3);
+    overflow: hidden;
+    padding: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 2rem;
+}
+
+#sector-auspex-canvas {
+    display: block;
+    background-color: transparent;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Removed .ship-info-popup styles as it's no longer an HTML element */
+
+/* --- Weekly Battles Schedule Table Styles --- */
+.weekly-battles-schedule {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.battle-schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-size: 0.95rem;
+    color: var(--auspex-light-grey);
+    background-color: var(--transparent-bg-very-dark);
+    border: 1px solid var(--auspex-green-dark);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.battle-schedule-table th,
+.battle-schedule-table td {
+    padding: 0.8rem;
+    border: 1px solid rgba(57, 255, 20, 0.2);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.battle-schedule-table th {
+    background-color: rgba(57, 255, 20, 0.1);
+    color: var(--auspex-green-light);
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.battle-schedule-table tbody tr:nth-child(even) {
+    background-color: rgba(57, 255, 20, 0.03);
+}
+
+.battle-schedule-table tbody tr:hover {
+    background-color: rgba(57, 255, 20, 0.08);
+    color: var(--auspex-green-light);
+}
+
+.battle-schedule-table .vs-cell {
+    text-align: center;
+    font-weight: bold;
+    color: var(--auspex-medium-grey);
+    width: 1%;
+}
+
+.battle-schedule-table .status-cell {
+    text-align: center;
+    font-weight: bold;
+    color: var(--auspex-green-dark);
 }
 
 /* Responsive Adjustments */
