@@ -158,26 +158,17 @@ body {
     background-color: #164a80;
 }
 
-/* Army Card Header for ship image placement */
+/* Army Card Header - Simplified without ship image */
 .army-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px; /* Space between title and ship image */
+    display: block; /* Revert to block display */
     margin-bottom: 1rem;
 }
 
 .army-card-header h3 {
-    margin: 0; /* Reset margin for h3 inside flex */
+    margin: 0; /* Reset margin for h3 */
 }
 
-/* Army Ship Image in overview card */
-.army-card-ship-image {
-    width: 40px; /* Smaller size for overview card */
-    height: 40px;
-    object-fit: contain; /* Ensure the whole ship is visible */
-    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
-}
+/* Removed: .army-card-ship-image */
 
 /* Army Detail Page Container */
 .army-detail-page-container {
@@ -214,14 +205,7 @@ body {
     color: #e0e0e0;
 }
 
-/* Army Ship Image in detail page */
-.army-detail-ship-image {
-    width: 100px; /* Larger size for detail page ship */
-    height: 100px;
-    object-fit: contain;
-    margin-bottom: 1.5rem;
-    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.6));
-}
+/* Removed: .army-detail-ship-image */
 
 
 /* Planetary Control Container */
@@ -253,9 +237,9 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
-    position: relative; /* For positioning back button, etc. */
-    overflow: hidden; /* Ensure percentage overlay doesn't spill */
-    display: flex; /* Use flexbox for overall card layout */
+    position: relative;
+    overflow: hidden;
+    display: flex;
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center items horizontally */
     justify-content: center;
@@ -281,7 +265,6 @@ body {
     width: 90%; /* Take up more space */
     max-width: 700px; /* Max width for detail view */
     height: auto; /* Adjust height to content */
-    /* REMOVED: flex-direction: row; and align-items: flex-start; for default mobile */
     padding: 2rem;
     background-color: #2a2a4a; /* Darker background for active card (not transparent) */
     box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5); /* Stronger glow */
@@ -302,34 +285,16 @@ body {
     visibility: visible;
 }
 
-/* New: Top row for planet image and side ships */
-.planet-top-visuals {
-    display: flex;
-    align-items: center; /* Vertically center ships with planet */
-    justify-content: center;
-    width: 100%; /* Take full width of the card */
-    margin-bottom: 0.5rem; /* Space between top visuals and bottom ships/text */
-}
+/* Removed: .planet-top-visuals, .ships-left-container, .ships-right-container */
 
-.ships-left-container,
-.ships-right-container {
-    display: flex;
-    flex-direction: column; /* Stack ships vertically if more than one */
-    align-items: center;
-    justify-content: center;
-    width: 50px; /* Fixed width for ship columns */
-    flex-shrink: 0; /* Prevent shrinking */
-    padding: 0 5px; /* Small padding */
-}
-
-/* Planet image container remains the same, but now it's a flex item */
+/* Planet image container remains the same */
 .planet-image-container {
     position: relative;
     width: 150px; /* Fixed size for planet image container */
     height: 150px;
     border-radius: 50%;
     overflow: hidden;
-    margin: 0 10px; /* Space between planet and ships */
+    margin-bottom: 1rem; /* Add back margin since side ships are gone */
     border: 3px solid #0f3460;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
@@ -360,25 +325,7 @@ body {
     border-radius: 50%; /* Ensure overlay segments are rounded */
 }
 
-/* New: Bottom row for ships */
-.ships-bottom-row {
-    display: flex;
-    justify-content: space-around; /* Distribute bottom ships */
-    width: 100%;
-    margin-top: 0.5rem; /* Space from top visuals */
-    margin-bottom: 1rem; /* Space before text */
-}
-
-.ships-bottom-left-container,
-.ships-bottom-right-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 50px; /* Fixed width for ship columns */
-    flex-shrink: 0;
-    padding: 0 5px;
-}
+/* Removed: .ships-bottom-row, .ships-bottom-left-container, .ships-bottom-right-container */
 
 
 /* Planet Info - Always visible (name & short description) */
@@ -471,21 +418,7 @@ body {
 }
 
 
-/* Base Ship Image Style on Planet Card */
-.ship-image {
-    width: 50px; /* Size of the ship */
-    height: auto;
-    z-index: 10; /* Ensure ship is on top */
-    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; /* Smooth movement */
-    margin: 5px 0; /* Space between stacked ships */
-}
-
-/* Hide ships on inactive planets */
-.planets-container.single-view .planet-card.inactive .ship-image {
-    opacity: 0;
-    transform: scale(0.5);
-}
+/* Removed: .ship-image, .ship-top-left, .ship-top-right, .ship-bottom-left, .ship-bottom-right */
 
 /* Back button for single view */
 .back-button-overlay {
@@ -668,10 +601,7 @@ body {
         text-align: center; /* Ensure individual percentage lines are centered */
     }
 
-    /* Adjust ship image size for mobile on planet cards */
-    .ship-image {
-        width: 40px; /* Slightly smaller ships on mobile planet cards */
-    }
+    /* Removed: .ship-image styling for mobile */
 }
 
 @media (min-width: 768px) {

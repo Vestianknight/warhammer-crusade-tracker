@@ -81,8 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (latestVersion !== currentAppVersion) {
                 console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
-                // Using a custom modal for alert, as per instructions, but for simplicity here, a browser alert is used.
-                // For a custom modal, you'd create a div, style it, and show/hide it.
                 alert("A new version of the Crusade Tracker is available! The page will now refresh.");
                 window.location.reload(true); // Force a hard reload from the server
             }
@@ -198,7 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 plugins: {
                     legend: {
-                        // FIX: Position legend at the bottom for better mobile display
                         position: 'bottom',
                         labels: {
                             color: '#e0e0e0',
@@ -250,8 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             armyCard.innerHTML = `
                 <div class="army-card-header">
                     <h3>${army.name}</h3>
-                    ${army.ship_image ? `<img src="${army.ship_image}" alt="${army.name} Ship" class="army-card-ship-image">` : ''}
-                </div>
+                    </div>
                 <p><strong>Faction:</strong> ${army.faction}</p>
                 <p>${army.description.substring(0, 100)}...</p>
                 <button class="view-button" data-army-id="${army.id}">View Details</button>
@@ -276,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
         armyDetailPageContainer.classList.remove('hidden'); // Show the detail container
 
         armyDetailContent.innerHTML = `
-            ${army.ship_image ? `<img src="${army.ship_image}" alt="${army.name} Ship" class="army-detail-ship-image">` : ''}
             <h3>${army.name}</h3>
             <p><strong>Player:</strong> ${army.player}</p>
             <p><strong>Faction:</strong> ${army.faction}</p>
@@ -312,14 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             planetCard.classList.add('planet-card');
             planetCard.dataset.planetId = planet.id; // Store planet ID for click handling
 
-            // --- New Structure for Planet Visuals ---
-            const planetTopVisuals = document.createElement('div');
-            planetTopVisuals.classList.add('planet-top-visuals');
-
-            const shipsLeftContainer = document.createElement('div');
-            shipsLeftContainer.classList.add('ships-left-container');
-            planetTopVisuals.appendChild(shipsLeftContainer);
-
+            // --- Simplified Structure for Planet Visuals (no ships) ---
             const planetImageContainer = document.createElement('div');
             planetImageContainer.classList.add('planet-image-container');
 
@@ -345,14 +333,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const faction = factionsData.find(f => f.name === factionName);
                 const color = faction ? faction.color : '#CCCCCC';
 
-                const segmentHeight = (percentage / totalFactionPercentage) * 100;
                 const segmentDiv = document.createElement('div');
                 segmentDiv.classList.add('planet-overlay-segment');
-                segmentDiv.style.height = `${segmentHeight}%`;
+                segmentDiv.style.height = `${(percentage / totalFactionPercentage) * 100}%`;
                 segmentDiv.style.backgroundColor = `${color}CC`;
                 segmentDiv.style.bottom = `${currentHeight}%`;
                 planetImageContainer.appendChild(segmentDiv);
-                currentHeight += segmentHeight;
+                currentHeight += (percentage / totalFactionPercentage) * 100;
             });
 
             if (totalFactionPercentage < 100) {
@@ -366,52 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             planetImageContainer.appendChild(planetImage);
-            planetTopVisuals.appendChild(planetImageContainer);
+            planetCard.appendChild(planetImageContainer); // Append the simplified planet image container
 
-            const shipsRightContainer = document.createElement('div');
-            shipsRightContainer.classList.add('ships-right-container');
-            planetTopVisuals.appendChild(shipsRightContainer);
-
-            planetCard.appendChild(planetTopVisuals); // Append the top visual wrapper
-
-            // --- Bottom Ships Row ---
-            const shipsBottomRow = document.createElement('div');
-            shipsBottomRow.classList.add('ships-bottom-row');
-
-            const shipsBottomLeftContainer = document.createElement('div');
-            shipsBottomLeftContainer.classList.add('ships-bottom-left-container');
-            shipsBottomRow.appendChild(shipsBottomLeftContainer);
-
-            const shipsBottomRightContainer = document.createElement('div');
-            shipsBottomRightContainer.classList.add('ships-bottom-right-container');
-            shipsBottomRow.appendChild(shipsBottomRightContainer);
-
-            planetCard.appendChild(shipsBottomRow); // Append the bottom ships row
-
-            // --- Distribute Ships ---
-            planet.army_control.forEach((armyControl, index) => {
-                const fightingArmy = armiesData.find(army => army.id === armyControl.army_id);
-                if (fightingArmy && fightingArmy.ship_image) {
-                    const shipImageElement = document.createElement('img');
-                    shipImageElement.classList.add('ship-image');
-                    shipImageElement.src = fightingArmy.ship_image;
-                    shipImageElement.alt = `${fightingArmy.name} Ship`;
-                    shipImageElement.title = `${fightingArmy.name} (${armyControl.percentage}%) is battling here!`;
-
-                    if (index === 0) {
-                        shipsLeftContainer.appendChild(shipImageElement);
-                    } else if (index === 1) {
-                        shipsRightContainer.appendChild(shipImageElement);
-                    } else if (index === 2) {
-                        shipsBottomLeftContainer.appendChild(shipImageElement);
-                    } else if (index === 3) {
-                        shipsBottomRightContainer.appendChild(shipImageElement);
-                    }
-                    // If more than 4 armies, they won't get a dedicated slot with this layout.
-                }
-            });
-            // --- End Distribute Ships ---
-
+            // --- Removed ship distribution logic ---
 
             // Short info for initial all-planets view (always visible now)
             const planetInfoShort = document.createElement('div');
@@ -453,18 +397,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.planet-card').forEach(card => {
             const cardId = card.dataset.planetId;
-            // Get all ship elements on this card
-            const shipElements = card.querySelectorAll('.ship-image');
+            // No ship elements to manipulate here anymore
+            // const shipElements = card.querySelectorAll('.ship-image');
 
             if (cardId !== planetId) {
                 card.classList.add('inactive');
-                // If a ship is on an inactive card, ensure it also fades
-                shipElements.forEach(ship => ship.classList.add('inactive'));
+                // No ship elements to manipulate here anymore
+                // shipElements.forEach(ship => ship.classList.add('inactive'));
             } else {
                 card.classList.remove('inactive');
                 card.classList.add('active'); // Highlight the active planet
-                // Ensure active ships are visible
-                shipElements.forEach(ship => ship.classList.remove('inactive'));
+                // No ship elements to manipulate here anymore
+                // shipElements.forEach(ship => ship.classList.remove('inactive'));
 
                 // Populate detailed view within this active card
                 const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
@@ -509,8 +453,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.planet-card').forEach(card => {
             card.classList.remove('inactive', 'active'); // Remove active/inactive classes
-            const shipElements = card.querySelectorAll('.ship-image');
-            shipElements.forEach(ship => ship.classList.remove('inactive')); // Ensure all ships are visible
+            // No ship elements to manipulate here anymore
+            // const shipElements = card.querySelectorAll('.ship-image');
+            // shipElements.forEach(ship => ship.classList.remove('inactive')); // Ensure all ships are visible
 
             // Restore short info and hide detailed info
             const shortInfoDiv = card.querySelector('.planet-info-short');
