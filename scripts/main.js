@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const armyListOverview = document.getElementById('army-list-overview'); // This will hold the army cards
     const armyDetailPageContainer = document.getElementById('army-detail-page-container');
     const armyDetailContent = document.getElementById('army-detail-content');
-    const backToRosterBtn = document.getElementById('back-to-roster-btn');
+    const backToRosterBtn = document.getElementById('back-to-roster-btn'); // Get the back button element
 
     // --- Faction Filter Elements ---
     const factionFilterDropdown = document.getElementById('faction-filter');
@@ -69,8 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             armyRosterSection.classList.remove('hidden');
             planetaryControlSection.classList.remove('hidden');
             resourcesSection.classList.remove('hidden');
-            // FIX: Call filterArmies to ensure initial display respects filter (default to 'all')
-            filterArmies(factionFilterDropdown.value);
+            filterArmies(factionFilterDropdown.value); // Re-render with current filter
         }
     }
 
@@ -129,6 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 filterArmies(event.target.value);
             });
 
+            // FIX: Add event listener for the "Back to All Armies" button
+            backToRosterBtn.addEventListener('click', () => {
+                window.location.hash = ''; // Clear the hash to go back to the default view
+            });
+
             // Start periodic version check
             setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 
@@ -142,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Faction Filter Logic ---
     function populateFactionFilter(factions) {
-        // Clear existing options except "All Factions"
         factionFilterDropdown.innerHTML = '<option value="all">All Factions</option>';
         factions.forEach(faction => {
             const option = document.createElement('option');
@@ -269,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Army List Overview (main page) ---
-    // Now accepts a list of armies to render (can be filtered)
     function renderArmyListOverview(armiesToRender) {
         armyListOverview.innerHTML = ''; // Clear previous content
         armyListOverview.classList.remove('hidden'); // Ensure visible

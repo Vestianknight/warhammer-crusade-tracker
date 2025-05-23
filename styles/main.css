@@ -174,16 +174,21 @@ body {
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    margin-top: 2rem;
-    text-align: center;
+    margin: 2rem auto; /* Centered horizontally */
+    text-align: center; /* Default for content inside */
+    display: flex; /* Use flexbox for internal layout */
+    flex-direction: column; /* Stack elements vertically by default */
+    align-items: center; /* Center items horizontally within the container */
+    max-width: 800px; /* Increased max-width for better text fitting */
 }
 
 .army-detail-page-container #army-detail-content {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    text-align: left;
+    flex-direction: column; /* Always column for content within detail page */
+    align-items: center; /* Center items horizontally within this content div */
+    gap: 0.8rem; /* Reduced gap for tighter text */
+    width: 100%; /* Ensure it takes full available width */
+    text-align: center; /* Default text alignment for mobile */
 }
 
 .army-detail-page-container #army-detail-content h3 {
@@ -197,6 +202,7 @@ body {
     font-size: 1.1rem;
     color: #e0e0e0;
     margin-bottom: 0.5rem;
+    max-width: 90%; /* Constrain text width slightly */
 }
 
 .army-detail-page-container #army-detail-content p strong {
@@ -288,7 +294,7 @@ body {
     height: 150px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 1rem; /* Add back margin since side ships are gone */
+    margin-bottom: 1rem;
     border: 3px solid #0f3460;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
@@ -589,6 +595,12 @@ body {
     .planet-detail-content-in-card .control-info p {
         text-align: center; /* Ensure individual percentage lines are centered */
     }
+
+    /* Army Detail Page Text Alignment Fix (Mobile Specific) */
+    .army-detail-page-container #army-detail-content h3,
+    .army-detail-page-container #army-detail-content p {
+        text-align: center; /* Ensure all text is centered on mobile */
+    }
 }
 
 @media (min-width: 768px) {
@@ -644,10 +656,14 @@ body {
         text-align: left; /* Ensure individual percentage lines are left-aligned */
     }
 
+    /* Army Detail Page Text Alignment Fix (Desktop Specific) */
     .army-detail-page-container #army-detail-content {
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-start;
-        text-align: left;
+        flex-direction: column; /* Keep as column for content within */
+        align-items: flex-start; /* Align content to the left within its div */
+        text-align: left; /* Ensure text is left-aligned on desktop */
+    }
+    .army-detail-page-container #army-detail-content h3,
+    .army-detail-page-container #army-detail-content p {
+        text-align: left; /* Ensure all text is left-aligned on desktop */
     }
 }
