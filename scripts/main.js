@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 plugins: {
                     legend: {
+                        // FIX: Position legend at the bottom for better mobile display
+                        position: 'bottom',
                         labels: {
                             color: '#e0e0e0',
                             boxWidth: 20,

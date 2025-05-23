@@ -281,8 +281,7 @@ body {
     width: 90%; /* Take up more space */
     max-width: 700px; /* Max width for detail view */
     height: auto; /* Adjust height to content */
-    flex-direction: row; /* Layout content horizontally */
-    align-items: flex-start;
+    /* REMOVED: flex-direction: row; and align-items: flex-start; for default mobile */
     padding: 2rem;
     background-color: #2a2a4a; /* Darker background for active card (not transparent) */
     box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5); /* Stronger glow */
@@ -476,7 +475,6 @@ body {
 .ship-image {
     width: 50px; /* Size of the ship */
     height: auto;
-    /* Removed absolute positioning here, now handled by parent flex containers */
     z-index: 10; /* Ensure ship is on top */
     filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; /* Smooth movement */
@@ -631,6 +629,51 @@ body {
 }
 
 /* Responsive Adjustments */
+@media (max-width: 767px) {
+    /* Chart Legend Fix */
+    .chart-container {
+        height: 350px; /* Give a bit more height for legend */
+    }
+
+    /* Planet Detail Text Alignment Fix (Mobile Specific) */
+    .planets-container.single-view .planet-card {
+        flex-direction: column; /* Stack image and text vertically */
+        align-items: center; /* Center items horizontally */
+        text-align: center; /* Center text within the card */
+        padding: 1rem; /* Reduce padding for mobile */
+        width: 95%; /* Take up more width */
+    }
+
+    .planets-container.single-view .planet-image-container {
+        width: 150px; /* Smaller image in detail view on mobile */
+        height: 150px;
+        margin: 0 auto 1rem auto; /* Center and add bottom margin */
+    }
+
+    .planet-detail-content-in-card {
+        width: 100%; /* Ensure content takes full width */
+        align-items: center; /* Center content within */
+        text-align: center; /* Center text within content */
+    }
+
+    /* Override specific text alignment for detailed info to center on mobile */
+    .planet-detail-content-in-card h3,
+    .planet-detail-content-in-card p,
+    .planet-detail-content-in-card .control-info,
+    .planet-detail-content-in-card .battle-info {
+        text-align: center; /* Center all text elements in detail view on mobile */
+    }
+
+    .planet-detail-content-in-card .control-info p {
+        text-align: center; /* Ensure individual percentage lines are centered */
+    }
+
+    /* Adjust ship image size for mobile on planet cards */
+    .ship-image {
+        width: 40px; /* Slightly smaller ships on mobile planet cards */
+    }
+}
+
 @media (min-width: 768px) {
     .header h1 {
         font-size: 3.5rem;
@@ -662,19 +705,26 @@ body {
     .planets-container.single-view .planet-card {
         max-width: 900px; /* Wider for desktop detail view */
         padding: 3rem;
+        flex-direction: row; /* Horizontal layout for desktop */
+        align-items: flex-start; /* Align items to the start */
     }
 
     .planets-container.single-view .planet-image-container {
         width: 250px; /* Larger image in detail view */
         height: 250px;
+        margin-right: 2rem; /* Space between image and text in detail view */
+        margin-bottom: 0; /* Remove bottom margin in detail view */
     }
 
-    .planet-detail-content-in-card h3 {
-        font-size: 2.5rem;
+    .planet-detail-content-in-card h3,
+    .planet-detail-content-in-card p,
+    .planet-detail-content-in-card .control-info,
+    .planet-detail-content-in-card .battle-info {
+        text-align: left; /* Ensure text is left-aligned on desktop */
     }
 
-    .planet-detail-content-in-card p {
-        font-size: 1.2rem;
+    .planet-detail-content-in-card .control-info p {
+        text-align: left; /* Ensure individual percentage lines are left-aligned */
     }
 
     .army-detail-page-container #army-detail-content {
