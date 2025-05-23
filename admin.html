@@ -9,7 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="main-content">
+    <div id="admin-password-overlay" class="password-overlay">
+        <div class="password-modal">
+            <h2>Admin Access Required</h2>
+            <p>Please enter the admin password:</p>
+            <input type="password" id="admin-password-input" placeholder="Enter password">
+            <button id="admin-password-submit" class="button">Enter</button>
+            <p class="password-warning">
+                This panel is for campaign administrators only.
+            </p>
+        </div>
+    </div>
+
+    <div id="admin-content" class="main-content">
         <header class="header">
             <h1>Admin Panel</h1>
             <p class="intro-text">
@@ -31,5 +43,7 @@
             <p>&copy; 2025 Warhammer 40k Crusade Tracker. All rights reserved.</p>
         </footer>
     </div>
+
+    <script src="scripts/admin.js"></script>
 </body>
 </html>

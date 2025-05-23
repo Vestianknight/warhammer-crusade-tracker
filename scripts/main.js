@@ -22,30 +22,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Password Protection (TEMPORARILY BYPASSED FOR DEVELOPMENT) ---
-    // This logic only applies to index.html
-    const passwordInput = document.getElementById('password-input');
-    const passwordSubmit = document.getElementById('password-submit');
-    const CORRECT_PASSWORD = "crusade";
-
-    // Only attempt to show/hide password overlay if it exists (i.e., on index.html)
+    // This logic only applies to index.html's password overlay
+    // For now, it bypasses the password, directly showing content for development.
+    // The admin.html page has its own separate password logic.
     if (passwordOverlay && mainContent) {
         passwordOverlay.classList.add('hidden');
         mainContent.style.display = 'block';
     }
+
 
     // Initialize the tracker only if on index.html
     if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html')) {
         initializeCrusadeTracker();
     } else {
         // For other pages (schedule.html, admin.html), just start version check
+        // The admin.html page will load its own admin.js for password protection
         setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
     }
 
 
-    // --- Helper for generating consistent colors for armies ---
+    // --- Helper for generating consistent colors for armies (Auspex Green Tones) ---
     const colors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-        '#C9CBCF', '#6A8B82', '#E6B0AA', '#D2B4DE', '#A9CCE3', '#FADBD8'
+        'rgba(57, 255, 20, 0.8)',  // Vibrant Green
+        'rgba(0, 179, 0, 0.8)',    // Darker Green
+        'rgba(128, 255, 0, 0.8)',  // Lime Green
+        'rgba(0, 102, 0, 0.8)',    // Very Dark Green
+        'rgba(57, 255, 20, 0.6)',  // Lighter Transparent Green
+        'rgba(0, 179, 0, 0.6)',    // Darker Transparent Green
+        'rgba(128, 255, 0, 0.6)',  // Lime Transparent Green
+        'rgba(0, 102, 0, 0.6)'     // Very Dark Transparent Green
     ];
     let colorIndex = 0;
     function getNextColor() {
@@ -214,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: army.name,
                 data: data,
                 backgroundColor: armyColor,
-                borderColor: armyColor,
+                borderColor: 'rgba(57, 255, 20, 0.6)', // Green border for bars
                 borderWidth: 1
             });
         });
@@ -236,10 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: {
                         stacked: true,
                         ticks: {
-                            color: '#e0e0e0'
+                            color: 'var(--auspex-light-grey)' // Auspex color for ticks
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(57, 255, 20, 0.1)' // Subtle green grid lines
                         }
                     },
                     y: {
@@ -247,10 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         beginAtZero: true,
                         max: 400,
                         ticks: {
-                            color: '#e0e0e0'
+                            color: 'var(--auspex-light-grey)' // Auspex color for ticks
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(57, 255, 20, 0.1)' // Subtle green grid lines
                         }
                     }
                 },
@@ -258,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#e0e0e0',
+                            color: 'var(--auspex-light-grey)', // Auspex color for legend
                             boxWidth: 20,
                             padding: 10
                         }
@@ -266,6 +271,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     tooltip: {
                         mode: 'index',
                         intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark tooltip background
+                        borderColor: 'var(--auspex-green-light)', // Green tooltip border
+                        borderWidth: 1,
+                        titleColor: 'var(--auspex-green-light)', // Green tooltip title
+                        bodyColor: 'var(--auspex-light-grey)', // Light grey tooltip body
                         callbacks: {
                             title: function(context) {
                                 if (context.length > 0) {
@@ -304,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         armyDetailPageContainer.classList.add('hidden'); // Ensure detail page is hidden
 
         if (armiesToRender.length === 0) {
-            armyListOverview.innerHTML = '<p style="text-align: center; color: #b0b0b0;">No armies found for this filter.</p>';
+            armyListOverview.innerHTML = '<p style="text-align: center; color: var(--auspex-medium-grey);">No armies found for this filter.</p>';
             return;
         }
 
@@ -333,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const army = armiesData.find(a => a.id === armyId);
         if (!army) {
-            armyDetailContent.innerHTML = `<p style="color: red;">Army not found!</p>`;
+            armyDetailContent.innerHTML = `<p style="color: var(--auspex-green-light);">Army not found!</p>`;
             return;
         }
 
@@ -378,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             planetCard.classList.add('planet-card');
             planetCard.dataset.planetId = planet.id; // Store planet ID for click handling
 
-            // --- Simplified Structure for Planet Visuals (no ships) ---
+            // --- Simplified Structure for Planet Visuals ---
             const planetImageContainer = document.createElement('div');
             planetImageContainer.classList.add('planet-image-container');
 
@@ -402,12 +412,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sortedFactions.forEach(factionName => {
                 const percentage = factionAggregatedControl[factionName];
                 const faction = factionsData.find(f => f.name === factionName);
-                const color = faction ? faction.color : '#CCCCCC';
+                // Use Auspex green for faction control overlay, or a base color if faction not found
+                const color = faction ? `rgba(57, 255, 20, ${0.5 + (factionsData.indexOf(faction) * 0.1)})` : 'rgba(128, 128, 128, 0.5)';
 
                 const segmentDiv = document.createElement('div');
                 segmentDiv.classList.add('planet-overlay-segment');
                 segmentDiv.style.height = `${(percentage / totalFactionPercentage) * 100}%`;
-                segmentDiv.style.backgroundColor = `${color}CC`;
+                segmentDiv.style.backgroundColor = color;
                 segmentDiv.style.bottom = `${currentHeight}%`;
                 planetImageContainer.appendChild(segmentDiv);
                 currentHeight += (percentage / totalFactionPercentage) * 100;
@@ -486,7 +497,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Generate HTML for army control
                 const armyControlHtml = selectedPlanet.army_control.map(ac => {
                     const army = armiesData.find(a => a.id === ac.army_id);
-                    return army ? `<p style="color:${ac.color};"><strong>${army.name}:</strong> ${ac.percentage}%</p>` : '';
+                    // Use Auspex green for army control text
+                    return army ? `<p style="color:var(--auspex-green-light);"><strong>${army.name}:</strong> ${ac.percentage}%</p>` : '';
                 }).join('');
 
                 const battleInfoHtml = selectedPlanet.battle_reason ? `
