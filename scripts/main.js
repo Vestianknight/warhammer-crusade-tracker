@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const armyDetailContent = document.getElementById('army-detail-content');
     const backToRosterBtn = document.getElementById('back-to-roster-btn');
 
+    // --- Faction Filter Elements ---
+    const factionFilterDropdown = document.getElementById('faction-filter');
+
+
     // --- Password Protection (TEMPORARILY BYPASSED FOR DEVELOPMENT) ---
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
@@ -65,7 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
             armyRosterSection.classList.remove('hidden');
             planetaryControlSection.classList.remove('hidden');
             resourcesSection.classList.remove('hidden');
-            renderArmyListOverview(armiesData); // Render the main army list overview
+            // FIX: Call filterArmies to ensure initial display respects filter (default to 'all')
+            filterArmies(factionFilterDropdown.value);
         }
     }
 
@@ -98,23 +103,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('data/factions.json'),
                 fetch('data/armies.json'),
                 fetch('data/planets.json'),
-                fetch('data/version.json') // Fetch version.json on initial load
+                fetch('data/version.json')
             ]);
 
             factionsData = await factionsRes.json();
             armiesData = await armiesRes.json();
             planetsData = await planetsRes.json();
-            currentAppVersion = (await versionRes.json()).version; // Set initial version
+            currentAppVersion = (await versionRes.json()).version;
 
             console.log('Data loaded:', { factionsData, armiesData, planetsData, currentAppVersion });
 
+            // Populate faction filter dropdown
+            populateFactionFilter(factionsData);
+
             // Initial render of components
             renderFactionChart(factionsData, armiesData);
-            renderPlanets(planetsData); // Planets need armiesData to place ships
+            renderPlanets(planetsData);
 
             // Set up hash-based routing
             window.addEventListener('hashchange', router);
             router(); // Call router once on load to handle initial URL
+
+            // Set up filter event listener
+            factionFilterDropdown.addEventListener('change', (event) => {
+                filterArmies(event.target.value);
+            });
 
             // Start periodic version check
             setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
@@ -125,6 +138,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                         Failed to load campaign data. Please check the data files and try again.
                                     </p>`;
         }
+    }
+
+    // --- Faction Filter Logic ---
+    function populateFactionFilter(factions) {
+        // Clear existing options except "All Factions"
+        factionFilterDropdown.innerHTML = '<option value="all">All Factions</option>';
+        factions.forEach(faction => {
+            const option = document.createElement('option');
+            option.value = faction.name;
+            option.textContent = faction.name;
+            factionFilterDropdown.appendChild(option);
+        });
+    }
+
+    function filterArmies(selectedFaction) {
+        let filtered = armiesData;
+        if (selectedFaction !== 'all') {
+            filtered = armiesData.filter(army => army.faction === selectedFaction);
+        }
+        renderArmyListOverview(filtered);
     }
 
 
@@ -236,18 +269,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Army List Overview (main page) ---
-    function renderArmyListOverview(armies) {
+    // Now accepts a list of armies to render (can be filtered)
+    function renderArmyListOverview(armiesToRender) {
         armyListOverview.innerHTML = ''; // Clear previous content
         armyListOverview.classList.remove('hidden'); // Ensure visible
         armyDetailPageContainer.classList.add('hidden'); // Ensure detail page is hidden
 
-        armies.forEach(army => {
+        if (armiesToRender.length === 0) {
+            armyListOverview.innerHTML = '<p style="text-align: center; color: #b0b0b0;">No armies found for this filter.</p>';
+            return;
+        }
+
+        armiesToRender.forEach(army => {
             const armyCard = document.createElement('div');
             armyCard.classList.add('army-card');
             armyCard.innerHTML = `
                 <div class="army-card-header">
                     <h3>${army.name}</h3>
-                    </div>
+                </div>
                 <p><strong>Faction:</strong> ${army.faction}</p>
                 <p>${army.description.substring(0, 100)}...</p>
                 <button class="view-button" data-army-id="${army.id}">View Details</button>
@@ -286,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Planetary Control (Planets & Ships) ---
+    // --- Planetary Control (Planets) ---
     const planetsContainer = document.getElementById('planets-container');
     let currentActivePlanetId = null; // To track which planet is in detail view
 
@@ -355,8 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
             planetImageContainer.appendChild(planetImage);
             planetCard.appendChild(planetImageContainer); // Append the simplified planet image container
 
-            // --- Removed ship distribution logic ---
-
             // Short info for initial all-planets view (always visible now)
             const planetInfoShort = document.createElement('div');
             planetInfoShort.classList.add('planet-info-short'); // Renamed class for clarity
@@ -397,18 +434,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.planet-card').forEach(card => {
             const cardId = card.dataset.planetId;
-            // No ship elements to manipulate here anymore
-            // const shipElements = card.querySelectorAll('.ship-image');
 
             if (cardId !== planetId) {
                 card.classList.add('inactive');
-                // No ship elements to manipulate here anymore
-                // shipElements.forEach(ship => ship.classList.add('inactive'));
             } else {
                 card.classList.remove('inactive');
                 card.classList.add('active'); // Highlight the active planet
-                // No ship elements to manipulate here anymore
-                // shipElements.forEach(ship => ship.classList.remove('inactive'));
 
                 // Populate detailed view within this active card
                 const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
@@ -453,9 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.planet-card').forEach(card => {
             card.classList.remove('inactive', 'active'); // Remove active/inactive classes
-            // No ship elements to manipulate here anymore
-            // const shipElements = card.querySelectorAll('.ship-image');
-            // shipElements.forEach(ship => ship.classList.remove('inactive')); // Ensure all ships are visible
 
             // Restore short info and hide detailed info
             const shortInfoDiv = card.querySelector('.planet-info-short');

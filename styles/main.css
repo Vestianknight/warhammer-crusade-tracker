@@ -168,8 +168,6 @@ body {
     margin: 0; /* Reset margin for h3 */
 }
 
-/* Removed: .army-card-ship-image */
-
 /* Army Detail Page Container */
 .army-detail-page-container {
     background-color: #3e3e60;
@@ -204,8 +202,6 @@ body {
 .army-detail-page-container #army-detail-content p strong {
     color: #e0e0e0;
 }
-
-/* Removed: .army-detail-ship-image */
 
 
 /* Planetary Control Container */
@@ -258,36 +254,34 @@ body {
 
 /* Styles for when a planet is clicked (single view) */
 .planets-container.single-view .planet-card {
-    position: absolute; /* Allow precise positioning for active card */
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 90%; /* Take up more space */
-    max-width: 700px; /* Max width for detail view */
-    height: auto; /* Adjust height to content */
+    width: 90%;
+    max-width: 700px;
+    height: auto;
     padding: 2rem;
-    background-color: #2a2a4a; /* Darker background for active card (not transparent) */
-    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5); /* Stronger glow */
-    z-index: 10; /* Bring active card to front */
+    background-color: #2a2a4a;
+    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5);
+    z-index: 10;
 }
 
 .planets-container.single-view .planet-card.inactive {
-    opacity: 0; /* Fade out completely */
-    transform: scale(0.5); /* Shrink significantly */
-    pointer-events: none; /* Make inactive planets unclickable */
-    visibility: hidden; /* Hide completely from screen readers */
+    opacity: 0;
+    transform: scale(0.5);
+    pointer-events: none;
+    visibility: hidden;
 }
 
 .planets-container.single-view .planet-card.active {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1); /* Reset scale if it was scaled on hover */
-    pointer-events: auto; /* Ensure active planet is clickable */
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
     visibility: visible;
 }
 
-/* Removed: .planet-top-visuals, .ships-left-container, .ships-right-container */
-
-/* Planet image container remains the same */
+/* Planet image container */
 .planet-image-container {
     position: relative;
     width: 150px; /* Fixed size for planet image container */
@@ -325,11 +319,9 @@ body {
     border-radius: 50%; /* Ensure overlay segments are rounded */
 }
 
-/* Removed: .ships-bottom-row, .ships-bottom-left-container, .ships-bottom-right-container */
-
 
 /* Planet Info - Always visible (name & short description) */
-.planet-info-short { /* Renamed for clarity */
+.planet-info-short {
     color: #e0e0e0; /* White text */
     text-align: center;
     padding: 0.5rem;
@@ -417,9 +409,6 @@ body {
     color: #e0e0e0; /* White text */
 }
 
-
-/* Removed: .ship-image, .ship-top-left, .ship-top-right, .ship-bottom-left, .ship-bottom-right */
-
 /* Back button for single view */
 .back-button-overlay {
     position: absolute;
@@ -435,12 +424,12 @@ body {
 
 
 /* Army Overview Dropdown (now part of the main army roster section) */
-.army-overview-controls {
+.army-filter-controls {
     text-align: center;
     margin-bottom: 1.5rem;
 }
 
-.army-overview-controls label {
+.army-filter-controls label {
     font-size: 1.1rem;
     margin-right: 0.5rem;
     color: #e94560;
@@ -600,8 +589,6 @@ body {
     .planet-detail-content-in-card .control-info p {
         text-align: center; /* Ensure individual percentage lines are centered */
     }
-
-    /* Removed: .ship-image styling for mobile */
 }
 
 @media (min-width: 768px) {
