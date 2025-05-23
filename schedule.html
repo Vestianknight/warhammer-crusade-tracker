@@ -23,13 +23,24 @@
         </header>
 
         <section class="section">
-            <h2>Upcoming Battles & Events</h2>
-            <p>No events scheduled yet. Check back soon!</p>
-            </section>
+            <h2>Sector Overview</h2>
+            <div class="auspex-display-container">
+                <canvas id="sector-auspex-canvas"></canvas>
+                <div id="ship-info-popup" class="ship-info-popup hidden"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>This Week's Battles</h2>
+            <div id="weekly-battles-schedule" class="weekly-battles-schedule">
+                </div>
+        </section>
 
         <footer class="footer">
             <p>&copy; 2025 Warhammer 40k Crusade Tracker. All rights reserved.</p>
         </footer>
     </div>
+
+    <script src="scripts/schedule.js"></script>
 </body>
 </html>

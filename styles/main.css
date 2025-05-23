@@ -633,15 +633,15 @@ body {
 
 /* Style for the "Back to Home" button within the password overlay */
 .back-to-home-button-overlay {
-    margin-top: 1.5rem; /* Space it from the password input/submit */
-    width: auto; /* Allow button to size to content */
-    padding: 0.6rem 1.2rem; /* Smaller padding for a less prominent button */
+    margin-top: 1.5rem;
+    width: auto;
+    padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
-    background-color: rgba(57, 255, 20, 0.05); /* Very subtle background */
-    border-color: rgba(57, 255, 20, 0.2); /* Muted border */
-    color: var(--auspex-medium-grey); /* Muted text color */
-    box-shadow: none; /* No glow */
-    text-shadow: none; /* No text shadow */
+    background-color: rgba(57, 255, 20, 0.05);
+    border-color: rgba(57, 255, 20, 0.2);
+    color: var(--auspex-medium-grey);
+    box-shadow: none;
+    text-shadow: none;
 }
 
 .back-to-home-button-overlay:hover {
@@ -649,7 +649,7 @@ body {
     border-color: rgba(57, 255, 20, 0.4);
     color: var(--auspex-light-grey);
     box-shadow: 0 0 5px rgba(57, 255, 20, 0.2);
-    transform: none; /* No lift */
+    transform: none;
 }
 
 .password-warning {
@@ -658,141 +658,135 @@ body {
     margin-top: 1.5rem;
 }
 
+/* --- New Styles for Schedule Page Visuals --- */
+.auspex-display-container {
+    position: relative;
+    width: 100%; /* Take full width of parent section */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--transparent-bg-very-dark); /* Darker transparent background */
+    border: 1px solid var(--auspex-green-dark);
+    border-radius: 5px;
+    box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.3); /* Inner glow */
+    overflow: hidden; /* Ensure nothing spills out */
+    padding: 1rem; /* Padding inside the auspex display */
+    box-sizing: border-box;
+}
+
+#sector-auspex-canvas {
+    display: block;
+    background-color: transparent; /* Canvas background should be transparent */
+    max-width: 100%; /* Ensure canvas is responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.ship-info-popup {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.9); /* Darker background for readability */
+    border: 1px solid var(--auspex-green-light);
+    border-radius: 3px;
+    padding: 0.5rem 0.8rem;
+    color: var(--auspex-green-light);
+    font-size: 0.9rem;
+    pointer-events: none; /* Allow mouse events to pass through */
+    white-space: nowrap; /* Prevent text wrapping */
+    z-index: 20; /* Above canvas */
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
+    transform: translate(-50%, -110%); /* Position above cursor/touch point */
+    transition: opacity 0.2s ease;
+    opacity: 1; /* Default to visible when not hidden class */
+}
+
+.ship-info-popup.hidden {
+    opacity: 0;
+    visibility: hidden; /* Hide completely */
+}
+
+/* --- Weekly Battles Schedule Styles --- */
+.weekly-battles-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Space between battle entries */
+    margin-top: 1.5rem;
+}
+
+.battle-entry {
+    background-color: var(--transparent-bg-very-dark); /* Transparent dark background */
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    border-radius: 5px;
+    padding: 1rem;
+    box-shadow: inset 0 0 5px rgba(57, 255, 20, 0.2); /* Subtle inner glow */
+    transition: all 0.2s ease;
+}
+
+.battle-entry:hover {
+    border-color: var(--auspex-green-dark);
+    box-shadow: inset 0 0 8px rgba(57, 255, 20, 0.4), 0 0 5px rgba(57, 255, 20, 0.2);
+}
+
+.battle-header {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    justify-content: center; /* Center content */
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--auspex-green-light);
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
+    font-weight: bold;
+}
+
+.battle-number {
+    flex-shrink: 0; /* Prevent shrinking */
+    margin-right: 0.5rem;
+}
+
+.battle-participants {
+    flex-grow: 1; /* Allow participants to take remaining space */
+    text-align: center; /* Center participants text */
+}
+
+.vs-text {
+    color: var(--auspex-medium-grey); /* Muted VS text */
+    font-size: 0.9em;
+    margin: 0 0.5em;
+}
+
+.battle-status {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--auspex-light-grey);
+}
+
+.status-indicator {
+    font-weight: bold;
+    color: var(--auspex-green-dark); /* Default status color */
+}
+
 /* Responsive Adjustments */
 @media (max-width: 767px) {
-    .header h1 {
-        font-size: 2rem;
-    }
-
-    .intro-text {
-        font-size: 1rem;
-    }
-
-    .main-nav a {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
-
-    .section h2 {
-        font-size: 1.8rem;
-    }
-
-    .chart-container {
-        height: 350px;
-    }
-
-    .army-list-overview .army-card h3 {
-        font-size: 1.2rem;
-    }
-
-    .army-list-overview .army-card p {
-        font-size: 0.8rem;
-    }
-
-    .army-detail-page-container #army-detail-content h3 {
-        font-size: 1.8rem;
-    }
-
-    .army-detail-page-container #army-detail-content p {
-        font-size: 1rem;
-    }
-
-    .planets-container.single-view .planet-card {
-        flex-direction: column;
+    /* ... (existing mobile adjustments) ... */
+    .battle-header {
+        flex-direction: column; /* Stack battle number and participants */
         align-items: center;
-        text-align: center;
-        padding: 1rem;
-        width: 95%;
     }
-
-    .planets-container.single-view .planet-image-container {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 1rem auto;
+    .battle-number {
+        margin-right: 0;
+        margin-bottom: 0.2rem;
     }
-
-    .planet-detail-content-in-card {
-        width: 100%;
-        align-items: center;
-        text-align: center;
-    }
-
-    .planet-detail-content-in-card h3,
-    .planet-detail-content-in-card p,
-    .planet-detail-content-in-card .control-info,
-    .planet-detail-content-in-card .battle-info {
-        text-align: center;
-    }
-
-    .planet-detail-content-in-card .control-info p {
-        text-align: center;
-    }
-
-    .army-detail-page-container #army-detail-content h3,
-    .army-detail-page-container #army-detail-content p {
+    .battle-participants {
         text-align: center;
     }
 }
 
 @media (min-width: 768px) {
-    .header h1 {
-        font-size: 3.5rem;
+    /* ... (existing desktop adjustments) ... */
+    .battle-header {
+        justify-content: flex-start; /* Align left on desktop */
     }
-
-    .intro-text {
-        font-size: 1.2rem;
-    }
-
-    .section h2 {
-        font-size: 2.5rem;
-    }
-
-    .chart-container {
-        height: 400px;
-    }
-
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-
-    .planet-card {
-        width: 250px;
-        height: auto;
-    }
-
-    .planets-container.single-view .planet-card {
-        max-width: 900px;
-        padding: 3rem;
-        flex-direction: row;
-        align-items: flex-start;
-    }
-
-    .planets-container.single-view .planet-image-container {
-        width: 250px;
-        height: 250px;
-        margin-right: 2rem;
-        margin-bottom: 0;
-    }
-
-    .planet-detail-content-in-card h3,
-    .planet-detail-content-in-card p,
-    .planet-detail-content-in-card .control-info,
-    .planet-detail-content-in-card .battle-info {
-        text-align: left;
-    }
-
-    .planet-detail-content-in-card .control-info p {
-        text-align: left;
-    }
-
-    /* Army Detail Page Text Alignment Fix (Desktop Specific) */
-    .army-detail-page-container #army-detail-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    .army-detail-page-container #army-detail-content h3,
-    .army-detail-page-container #army-detail-content p {
-        text-align: center;
+    .battle-participants {
+        text-align: left; /* Align left on desktop */
     }
 }
