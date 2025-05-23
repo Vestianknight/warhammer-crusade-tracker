@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             },
                             label: function(context) {
                                 const hoveredFaction = context.label;
-                                const armyName = context.dataset.label;
+                                const armyName = tooltipItem.dataset.label;
                                 const army = armies.find(a => a.name === armyName && a.faction === hoveredFaction);
                                 if (army) {
                                     return `${army.name}: ${army.crusade_points} Crusade Points`;
@@ -304,6 +304,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const planetsContainer = document.getElementById('planets-container');
     let currentActivePlanetId = null; // To track which planet is in detail view
 
+    // Define ship positioning classes
+    const shipPositionClasses = [
+        'ship-top-left',
+        'ship-top-right',
+        'ship-bottom-left',
+        'ship-bottom-right'
+    ];
+
     function renderPlanets(planets) {
         planetsContainer.innerHTML = ''; // Clear previous content
         planetsContainer.classList.remove('single-view'); // Ensure not in single view initially
@@ -329,23 +337,42 @@ document.addEventListener('DOMContentLoaded', () => {
             planetImage.src = planet.image || `images/planet1.png`; // Placeholder if image not found
             planetImage.alt = planet.name;
 
-            // Percentage Overlay - Opacity adjusted in CSS for more planet visibility
-            const totalPercentage = planet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0);
+            // Percentage Overlay (still based on factions for visual consistency of the planet itself)
+            // Note: The `army_control` will be used for detailed display,
+            // but the visual planet segments might still be faction-based for simplicity.
+            // If you want per-army segments, this logic would need to be more complex.
+            const totalFactionPercentage = planet.army_control.reduce((sum, ac) => sum + ac.percentage, 0);
             let currentHeight = 0;
-            planet.factions_control.forEach(fc => {
-                const segmentHeight = (fc.percentage / totalPercentage) * 100; // Calculate segment height relative to 100%
+            // Aggregate percentages by faction for the visual overlay on the planet image
+            const factionAggregatedControl = {};
+            planet.army_control.forEach(ac => {
+                const army = armiesData.find(a => a.id === ac.army_id);
+                if (army) {
+                    factionAggregatedControl[army.faction] = (factionAggregatedControl[army.faction] || 0) + ac.percentage;
+                }
+            });
+
+            // Convert aggregated faction control to segments
+            const sortedFactions = Object.keys(factionAggregatedControl).sort(); // Sort for consistent layering
+            sortedFactions.forEach(factionName => {
+                const percentage = factionAggregatedControl[factionName];
+                const faction = factionsData.find(f => f.name === factionName);
+                const color = faction ? faction.color : '#CCCCCC'; // Default color if faction not found
+
+                const segmentHeight = (percentage / totalFactionPercentage) * 100;
                 const segmentDiv = document.createElement('div');
                 segmentDiv.classList.add('planet-overlay-segment');
                 segmentDiv.style.height = `${segmentHeight}%`;
-                segmentDiv.style.backgroundColor = `${fc.color}CC`; // Add some transparency
-                segmentDiv.style.bottom = `${currentHeight}%`; // Stack segments from the bottom
+                segmentDiv.style.backgroundColor = `${color}CC`; // Add some transparency
+                segmentDiv.style.bottom = `${currentHeight}%`;
                 planetImageContainer.appendChild(segmentDiv);
                 currentHeight += segmentHeight;
             });
 
+
             // Add a base overlay for the rest of the planet if total is less than 100%
-            if (totalPercentage < 100) {
-                const remainingHeight = 100 - totalPercentage;
+            if (totalFactionPercentage < 100) {
+                const remainingHeight = 100 - totalFactionPercentage;
                 const baseOverlay = document.createElement('div');
                 baseOverlay.classList.add('planet-overlay-segment');
                 baseOverlay.style.height = `${remainingHeight}%`;
@@ -366,20 +393,23 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             planetCard.appendChild(planetInfoShort);
 
-            // --- Ship Image for Planet ---
-            // If this planet has an army fighting on it, display that army's ship
-            if (planet.fighting_army_id) {
-                const fightingArmy = armiesData.find(army => army.id === planet.fighting_army_id);
+            // --- Multiple Ship Images for Planet ---
+            planet.army_control.forEach((armyControl, index) => {
+                const fightingArmy = armiesData.find(army => army.id === armyControl.army_id);
                 if (fightingArmy && fightingArmy.ship_image) {
                     const shipImageElement = document.createElement('img');
                     shipImageElement.classList.add('ship-image');
+                    // Assign a positioning class based on index, cycling through available positions
+                    const positionClass = shipPositionClasses[index % shipPositionClasses.length];
+                    shipImageElement.classList.add(positionClass);
+
                     shipImageElement.src = fightingArmy.ship_image; // Use the army's specific ship image
                     shipImageElement.alt = `${fightingArmy.name} Ship`;
-                    shipImageElement.title = `${fightingArmy.name} is battling here!`; // Tooltip for the ship
+                    shipImageElement.title = `${fightingArmy.name} (${armyControl.percentage}%) is battling here!`; // Tooltip
                     planetCard.appendChild(shipImageElement);
                 }
-            }
-            // --- End Ship Image for Planet ---
+            });
+            // --- End Multiple Ship Images for Planet ---
 
 
             // Container for detailed info (initially hidden)
@@ -413,21 +443,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.planet-card').forEach(card => {
             const cardId = card.dataset.planetId;
-            const shipElement = card.querySelector('.ship-image'); // Get ship for this card
+            // Get all ship elements on this card
+            const shipElements = card.querySelectorAll('.ship-image');
 
             if (cardId !== planetId) {
                 card.classList.add('inactive');
                 // If a ship is on an inactive card, ensure it also fades
-                if (shipElement) {
-                    shipElement.classList.add('inactive');
-                }
+                shipElements.forEach(ship => ship.classList.add('inactive'));
             } else {
                 card.classList.remove('inactive');
                 card.classList.add('active'); // Highlight the active planet
-                // Ensure active ship is visible
-                if (shipElement) {
-                    shipElement.classList.remove('inactive');
-                }
+                // Ensure active ships are visible
+                shipElements.forEach(ship => ship.classList.remove('inactive'));
 
                 // Populate detailed view within this active card
                 const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
@@ -437,13 +464,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shortInfoDiv) shortInfoDiv.classList.add('hidden');
                 if (detailContentDiv) detailContentDiv.classList.remove('hidden');
 
-                // Find the fighting army to display its name in the battle info
-                const fightingArmy = selectedPlanet.fighting_army_id ? armiesData.find(a => a.id === selectedPlanet.fighting_army_id) : null;
+                // Generate HTML for army control
+                const armyControlHtml = selectedPlanet.army_control.map(ac => {
+                    const army = armiesData.find(a => a.id === ac.army_id);
+                    return army ? `<p style="color:${ac.color};"><strong>${army.name}:</strong> ${ac.percentage}%</p>` : '';
+                }).join('');
+
                 const battleInfoHtml = selectedPlanet.battle_reason ? `
                     <div class="battle-info">
                         <h4>Current Battle:</h4>
                         <p>${selectedPlanet.battle_reason}</p>
-                        ${fightingArmy ? `<p><strong>Primary Army:</strong> ${fightingArmy.name}</p>` : ''}
                     </div>
                 ` : '';
 
@@ -451,8 +481,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3>${selectedPlanet.name}</h3>
                     <p>${selectedPlanet.description}</p>
                     <div class="control-info">
-                        <h4>Current Control:</h4>
-                        ${selectedPlanet.factions_control.map(fc => `<p style="color:${fc.color};"><strong>${fc.faction}:</strong> ${fc.percentage}%</p>`).join('')}
+                        <h4>Army Control:</h4>
+                        ${armyControlHtml}
                     </div>
                     ${battleInfoHtml}
                 `;
@@ -469,10 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.planet-card').forEach(card => {
             card.classList.remove('inactive', 'active'); // Remove active/inactive classes
-            const shipElement = card.querySelector('.ship-image');
-            if (shipElement) {
-                shipElement.classList.remove('inactive'); // Ensure all ships are visible
-            }
+            const shipElements = card.querySelectorAll('.ship-image');
+            shipElements.forEach(ship => ship.classList.remove('inactive')); // Ensure all ships are visible
 
             // Restore short info and hide detailed info
             const shortInfoDiv = card.querySelector('.planet-info-short');

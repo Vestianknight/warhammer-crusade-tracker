@@ -253,7 +253,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
-    position: relative; /* For positioning ship and overlay */
+    position: relative; /* CRITICAL: For positioning ships absolutely within */
     overflow: hidden; /* Ensure percentage overlay doesn't spill */
     display: flex;
     flex-direction: column;
@@ -431,16 +431,35 @@ body {
 }
 
 
-/* Ship Image on Planet Card */
-.ship-image { /* This is the ship on the planet card */
-    width: 60px; /* Size of the ship */
+/* Base Ship Image Style on Planet Card */
+.ship-image {
+    width: 50px; /* Size of the ship */
     height: auto;
-    position: absolute;
-    top: 10px; /* Position on the top right of the planet card */
-    right: 10px;
+    position: absolute; /* Crucial for positioning */
     z-index: 10; /* Ensure ship is on top */
     filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; /* Smooth movement */
+}
+
+/* Specific positioning for ships */
+.ship-top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.ship-top-right {
+    top: 10px;
+    right: 10px;
+}
+
+.ship-bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.ship-bottom-right {
+    bottom: 10px;
+    right: 10px;
 }
 
 /* Hide ships on inactive planets */
