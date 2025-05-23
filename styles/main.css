@@ -7,8 +7,8 @@
     --auspex-green-dark: #00B300; /* A darker, subtle green for borders/shadows */
     --auspex-black: #000000;
     --auspex-dark-grey: #050505; /* For main content backgrounds */
-    --auspex-light-grey: #A0A0A0; /* For general text */
-    --auspex-medium-grey: #505050; /* For muted text */
+    --auspex-light-grey: #FFFFFF; /* Changed to White for general text */
+    --auspex-medium-grey: #CCCCCC; /* Changed to a lighter grey for muted text */
     --transparent-bg-light: rgba(5, 5, 5, 0.8); /* Slightly transparent dark background */
     --transparent-bg-dark: rgba(0, 0, 0, 0.6); /* More transparent darker background */
     --transparent-bg-very-dark: rgba(0, 0, 0, 0.4); /* Very transparent */
@@ -130,7 +130,7 @@ body {
 
 .sub-text {
     text-align: center;
-    color: var(--auspex-medium-grey);
+    color: var(--auspex-medium-grey); /* Use lighter grey for sub-text */
     margin-bottom: 1.5rem;
 }
 
@@ -210,7 +210,7 @@ body {
 
 .army-list-overview .army-card p {
     font-size: 0.9rem;
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for descriptions */
     margin-bottom: 0.5rem;
 }
 
@@ -277,7 +277,7 @@ body {
 
 .army-detail-page-container #army-detail-content p {
     font-size: 1.1rem;
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for descriptions */
     margin-bottom: 0.5rem;
     max-width: 90%;
 }
@@ -407,7 +407,7 @@ body {
 
 /* Planet Info - Always visible (name & short description) */
 .planet-info-short {
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for descriptions */
     text-align: center;
     padding: 0.5rem;
     box-sizing: border-box;
@@ -425,7 +425,7 @@ body {
 .planet-info-short p {
     font-size: 0.85rem;
     margin-bottom: 0;
-    color: var(--auspex-medium-grey);
+    color: var(--auspex-medium-grey); /* Use lighter grey for descriptions */
 }
 
 /* Detailed Planet Info (appears on click) */
@@ -451,7 +451,7 @@ body {
 
 .planet-detail-content-in-card p {
     font-size: 1.1rem;
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for descriptions */
     max-width: 600px;
     margin: 0 0 0.5rem 0;
 }
@@ -472,7 +472,7 @@ body {
 .planet-detail-content-in-card .control-info p {
     margin: 0.2rem 0;
     font-size: 1rem;
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for descriptions */
 }
 
 .planet-detail-content-in-card .battle-info {
@@ -497,7 +497,7 @@ body {
 .planet-detail-content-in-card .battle-info p {
     font-size: 1rem;
     margin: 0;
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for descriptions */
 }
 
 /* Back button for single view */
@@ -532,7 +532,7 @@ body {
     border-radius: 3px;
     border: 1px solid var(--auspex-green-dark);
     background-color: var(--transparent-bg-very-dark);
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for dropdown text */
     font-size: 1rem;
     cursor: pointer;
     width: 100%;
@@ -561,7 +561,7 @@ body {
 
 .footer p {
     font-size: 0.9rem;
-    color: var(--auspex-medium-grey);
+    color: var(--auspex-medium-grey); /* Use lighter grey for footer text */
 }
 
 /* Utility Classes */
@@ -603,7 +603,7 @@ body {
 }
 
 .password-modal p {
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for modal text */
     margin-bottom: 1rem;
 }
 
@@ -639,7 +639,7 @@ body {
     font-size: 0.9rem;
     background-color: rgba(57, 255, 20, 0.05);
     border-color: rgba(57, 255, 20, 0.2);
-    color: var(--auspex-medium-grey);
+    color: var(--auspex-medium-grey); /* Use lighter grey for this button's text */
     box-shadow: none;
     text-shadow: none;
 }
@@ -647,146 +647,82 @@ body {
 .back-to-home-button-overlay:hover {
     background-color: rgba(57, 255, 20, 0.1);
     border-color: rgba(57, 255, 20, 0.4);
-    color: var(--auspex-light-grey);
+    color: var(--auspex-light-grey); /* Use lighter grey for hover text */
     box-shadow: 0 0 5px rgba(57, 255, 20, 0.2);
     transform: none;
 }
 
 .password-warning {
     font-size: 0.8rem;
-    color: var(--auspex-medium-grey);
+    color: var(--auspex-medium-grey); /* Use lighter grey for warning text */
     margin-top: 1.5rem;
-}
-
-/* --- New Styles for Schedule Page Visuals --- */
-.auspex-display-container {
-    position: relative;
-    width: 100%; /* Take full width of parent section */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--transparent-bg-very-dark); /* Darker transparent background */
-    border: 1px solid var(--auspex-green-dark);
-    border-radius: 5px;
-    box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.3); /* Inner glow */
-    overflow: hidden; /* Ensure nothing spills out */
-    padding: 1rem; /* Padding inside the auspex display */
-    box-sizing: border-box;
-}
-
-#sector-auspex-canvas {
-    display: block;
-    background-color: transparent; /* Canvas background should be transparent */
-    max-width: 100%; /* Ensure canvas is responsive */
-    height: auto; /* Maintain aspect ratio */
-}
-
-.ship-info-popup {
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.9); /* Darker background for readability */
-    border: 1px solid var(--auspex-green-light);
-    border-radius: 3px;
-    padding: 0.5rem 0.8rem;
-    color: var(--auspex-green-light);
-    font-size: 0.9rem;
-    pointer-events: none; /* Allow mouse events to pass through */
-    white-space: nowrap; /* Prevent text wrapping */
-    z-index: 20; /* Above canvas */
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
-    text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
-    transform: translate(-50%, -110%); /* Position above cursor/touch point */
-    transition: opacity 0.2s ease;
-    opacity: 1; /* Default to visible when not hidden class */
-}
-
-.ship-info-popup.hidden {
-    opacity: 0;
-    visibility: hidden; /* Hide completely */
-}
-
-/* --- Weekly Battles Schedule Styles --- */
-.weekly-battles-schedule {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem; /* Space between battle entries */
-    margin-top: 1.5rem;
-}
-
-.battle-entry {
-    background-color: var(--transparent-bg-very-dark); /* Transparent dark background */
-    border: 1px solid rgba(57, 255, 20, 0.3);
-    border-radius: 5px;
-    padding: 1rem;
-    box-shadow: inset 0 0 5px rgba(57, 255, 20, 0.2); /* Subtle inner glow */
-    transition: all 0.2s ease;
-}
-
-.battle-entry:hover {
-    border-color: var(--auspex-green-dark);
-    box-shadow: inset 0 0 8px rgba(57, 255, 20, 0.4), 0 0 5px rgba(57, 255, 20, 0.2);
-}
-
-.battle-header {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping on small screens */
-    justify-content: center; /* Center content */
-    align-items: baseline;
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-    color: var(--auspex-green-light);
-    text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
-    font-weight: bold;
-}
-
-.battle-number {
-    flex-shrink: 0; /* Prevent shrinking */
-    margin-right: 0.5rem;
-}
-
-.battle-participants {
-    flex-grow: 1; /* Allow participants to take remaining space */
-    text-align: center; /* Center participants text */
-}
-
-.vs-text {
-    color: var(--auspex-medium-grey); /* Muted VS text */
-    font-size: 0.9em;
-    margin: 0 0.5em;
-}
-
-.battle-status {
-    text-align: center;
-    font-size: 0.9rem;
-    color: var(--auspex-light-grey);
-}
-
-.status-indicator {
-    font-weight: bold;
-    color: var(--auspex-green-dark); /* Default status color */
 }
 
 /* Responsive Adjustments */
 @media (max-width: 767px) {
     /* ... (existing mobile adjustments) ... */
-    .battle-header {
-        flex-direction: column; /* Stack battle number and participants */
-        align-items: center;
+    .battle-schedule-table {
+        font-size: 0.8rem;
+        display: block;
+        width: 100%;
     }
-    .battle-number {
-        margin-right: 0;
-        margin-bottom: 0.2rem;
+
+    .battle-schedule-table thead,
+    .battle-schedule-table tbody,
+    .battle-schedule-table th,
+    .battle-schedule-table td,
+    .battle-schedule-table tr {
+        display: block;
     }
-    .battle-participants {
-        text-align: center;
+
+    .battle-schedule-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .battle-schedule-table tr {
+        border: 1px solid rgba(57, 255, 20, 0.2);
+        margin-bottom: 0.5rem;
+        border-radius: 5px;
+    }
+
+    .battle-schedule-table td {
+        border: none;
+        border-bottom: 1px solid rgba(57, 255, 20, 0.1);
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+
+    .battle-schedule-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        color: var(--auspex-green-light);
+        text-align: left;
+    }
+
+    /* Specific labels for each column on mobile */
+    .battle-schedule-table td:nth-of-type(1):before { content: "Battle #"; }
+    .battle-schedule-table td:nth-of-type(2):before { content: "Army 1"; }
+    .battle-schedule-table td:nth-of-type(3):before { content: ""; }
+    .battle-schedule-table td:nth-of-type(4):before { content: "Army 2"; }
+    .battle-schedule-table td:nth-of-type(5):before { content: "Status"; }
+
+    .battle-schedule-table .vs-cell {
+        text-align: right;
     }
 }
 
 @media (min-width: 768px) {
     /* ... (existing desktop adjustments) ... */
-    .battle-header {
-        justify-content: flex-start; /* Align left on desktop */
-    }
-    .battle-participants {
-        text-align: left; /* Align left on desktop */
+    .battle-schedule-table th,
+    .battle-schedule-table td {
+        white-space: normal;
     }
 }

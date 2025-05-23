@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 adminContent.style.display = 'block'; // Show content
                 passwordInput.value = ''; // Clear password field
             } else {
+                // Changed alert message color to white for consistency
                 alert("Incorrect password. Access denied.");
                 passwordInput.value = ''; // Clear password field
             }

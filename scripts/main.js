@@ -41,16 +41,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Helper for generating consistent colors for armies (Auspex Green Tones) ---
+    // --- Helper for generating consistent colors for armies (REVERTED TO ORIGINAL DISTINCT COLORS) ---
     const colors = [
-        'rgba(57, 255, 20, 0.8)',  // Vibrant Green
-        'rgba(0, 179, 0, 0.8)',    // Darker Green
-        'rgba(128, 255, 0, 0.8)',  // Lime Green
-        'rgba(0, 102, 0, 0.8)',    // Very Dark Green
-        'rgba(57, 255, 20, 0.6)',  // Lighter Transparent Green
-        'rgba(0, 179, 0, 0.6)',    // Darker Transparent Green
-        'rgba(128, 255, 0, 0.6)',  // Lime Transparent Green
-        'rgba(0, 102, 0, 0.6)'     // Very Dark Transparent Green
+        '#FF6384', // Red
+        '#36A2EB', // Blue
+        '#FFCE56', // Yellow
+        '#4BC0C0', // Teal
+        '#9966FF', // Purple
+        '#FF9F40', // Orange
+        '#C9CBCF', // Grey
+        '#6A8B82', // Green-Grey
+        '#E6B0AA', // Light Brown
+        '#D2B4DE', // Lavender
+        '#A9CCE3', // Light Blue
+        '#FADBD8'  // Light Pink
     ];
     let colorIndex = 0;
     function getNextColor() {
@@ -165,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error loading data:', error);
             if (mainContent) {
-                mainContent.innerHTML = `<p style="color: red; text-align: center;">
+                mainContent.innerHTML = `<p style="color: white; text-align: center;">
                                             Failed to load campaign data. Please check the data files and try again.
                                         </p>`;
             }
@@ -219,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: army.name,
                 data: data,
                 backgroundColor: armyColor,
-                borderColor: 'rgba(57, 255, 20, 0.6)', // Green border for bars
+                borderColor: 'rgba(255, 255, 255, 0.6)', // White border for bars
                 borderWidth: 1
             });
         });
@@ -241,10 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: {
                         stacked: true,
                         ticks: {
-                            color: 'var(--auspex-light-grey)' // Auspex color for ticks
+                            color: 'white' // White color for x-axis ticks
                         },
                         grid: {
-                            color: 'rgba(57, 255, 20, 0.1)' // Subtle green grid lines
+                            color: 'rgba(255, 255, 255, 0.1)' // Subtle white grid lines
                         }
                     },
                     y: {
@@ -252,10 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         beginAtZero: true,
                         max: 400,
                         ticks: {
-                            color: 'var(--auspex-light-grey)' // Auspex color for ticks
+                            color: 'white' // White color for y-axis ticks
                         },
                         grid: {
-                            color: 'rgba(57, 255, 20, 0.1)' // Subtle green grid lines
+                            color: 'rgba(255, 255, 255, 0.1)' // Subtle white grid lines
                         }
                     }
                 },
@@ -263,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: 'var(--auspex-light-grey)', // Auspex color for legend
+                            color: 'white', // White color for legend labels
                             boxWidth: 20,
                             padding: 10
                         }
@@ -272,10 +276,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         mode: 'index',
                         intersect: false,
                         backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark tooltip background
-                        borderColor: 'var(--auspex-green-light)', // Green tooltip border
+                        borderColor: 'white', // White tooltip border
                         borderWidth: 1,
-                        titleColor: 'var(--auspex-green-light)', // Green tooltip title
-                        bodyColor: 'var(--auspex-light-grey)', // Light grey tooltip body
+                        titleColor: 'white', // White tooltip title
+                        bodyColor: 'white', // White tooltip body
                         callbacks: {
                             title: function(context) {
                                 if (context.length > 0) {
@@ -314,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         armyDetailPageContainer.classList.add('hidden'); // Ensure detail page is hidden
 
         if (armiesToRender.length === 0) {
-            armyListOverview.innerHTML = '<p style="text-align: center; color: var(--auspex-medium-grey);">No armies found for this filter.</p>';
+            armyListOverview.innerHTML = '<p style="text-align: center; color: white;">No armies found for this filter.</p>';
             return;
         }
 
@@ -343,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const army = armiesData.find(a => a.id === armyId);
         if (!army) {
-            armyDetailContent.innerHTML = `<p style="color: var(--auspex-green-light);">Army not found!</p>`;
+            armyDetailContent.innerHTML = `<p style="color: white;">Army not found!</p>`;
             return;
         }
 
