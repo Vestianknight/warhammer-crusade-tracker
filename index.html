@@ -46,20 +46,14 @@
     </script>
 </head>
 <body>
-    <div id="password-overlay" class="password-overlay">
+    <div id="password-overlay" class="password-overlay hidden">
         <div class="password-modal">
             <h2>Access Crusade Tracker</h2>
-            <p>Please enter the campaign password:</p>
-            <input type="password" id="password-input" placeholder="Enter password">
-            <button id="password-submit" class="button">Enter</button>
-            <p class="password-warning">
-                Note: This is a client-side password for casual privacy.
-                For stronger security, a server-side solution would be needed.
-            </p>
-        </div>
+            <p>This page is publicly accessible.</p>
+            </div>
     </div>
 
-    <div id="main-content" class="main-content">
+    <div id="main-content" class="main-content" style="display: block;">
         <header class="header">
             <h1>Warhammer 40k Crusade: The <span class="campaign-name">Galactic Gauntlet</span></h1>
             <p class="intro-text">
