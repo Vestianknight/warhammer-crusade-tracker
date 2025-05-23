@@ -7,6 +7,40 @@
     <base href="/warhammer-crusade-tracker/">
     <link rel="stylesheet" href="styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Expose Firebase modules globally for other scripts to use
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            onSnapshot,
+            collection,
+            query,
+            where,
+            getDocs
+        };
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Expose global variables to other scripts
+        window.__app_id = appId;
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+    </script>
 </head>
 <body>
     <div class="main-content" style="display: block;">
@@ -26,7 +60,7 @@
             <h2>Sector Overview</h2>
             <div class="auspex-display-container">
                 <canvas id="sector-auspex-canvas"></canvas>
-                </div>
+            </div>
         </section>
 
         <section class="section">
@@ -38,6 +72,7 @@
                     </select>
             </div>
             <div id="weekly-battles-schedule" class="weekly-battles-schedule">
+                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading battle schedule...</p>
                 </div>
         </section>
 

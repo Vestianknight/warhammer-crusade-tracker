@@ -10,6 +10,40 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Expose Firebase modules globally for other scripts to use
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            onSnapshot,
+            collection,
+            query,
+            where,
+            getDocs
+        };
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Expose global variables to other scripts
+        window.__app_id = appId;
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+    </script>
 </head>
 <body>
     <div id="password-overlay" class="password-overlay">
@@ -17,7 +51,7 @@
             <h2>Access Crusade Tracker</h2>
             <p>Please enter the campaign password:</p>
             <input type="password" id="password-input" placeholder="Enter password">
-            <button id="password-submit">Enter</button>
+            <button id="password-submit" class="button">Enter</button>
             <p class="password-warning">
                 Note: This is a client-side password for casual privacy.
                 For stronger security, a server-side solution would be needed.
@@ -56,6 +90,7 @@
                     </select>
             </div>
             <div id="army-list-overview" class="army-list-overview grid-container">
+                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading army data...</p>
                 </div>
             <div id="army-detail-page-container" class="army-detail-page-container hidden">
                 <button id="back-to-roster-btn" class="button back-button">Back to All Armies</button>
@@ -67,6 +102,7 @@
             <h2>Planetary Control</h2>
             <p class="sub-text">Click a planet for details.</p>
             <div id="planets-container" class="planets-container">
+                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading planet data...</p>
                 </div>
         </section>
 

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Global Data Variables (Accessible to all functions below) ---
     let factionsData = [];
-    let armiesData = [];
+    let armiesData = []; // This will now be populated from Firestore
     let planetsData = [];
 
     // --- DOM Elements for Sections (only relevant for index.html) ---
@@ -20,6 +20,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Faction Filter Elements (only relevant for index.html) ---
     const factionFilterDropdown = document.getElementById('faction-filter');
 
+    // --- Firebase Variables ---
+    let db; // Firestore instance
+    let auth; // Auth instance
+    let userId = null; // Current user ID
+    let isAuthReady = false; // Flag to ensure Firestore operations happen after auth
+
+    // Reference to Firebase modules and global variables exposed by the HTML script
+    const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } = window.firebase;
+    const appId = window.__app_id;
+    const firebaseConfig = window.__firebase_config;
+    const initialAuthToken = window.__initial_auth_token;
+
+    // --- Firebase Initialization and Authentication ---
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            userId = user.uid;
+            console.log("Main: Authenticated with user ID:", userId);
+            isAuthReady = true;
+            // Once authenticated, proceed with loading data
+            initializeCrusadeTracker();
+        } else {
+            // User is signed out, or not yet signed in. Sign in anonymously if no custom token.
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Main: Signed in with custom token.");
+                } catch (error) {
+                    console.error("Main: Error signing in with custom token:", error);
+                    alert("Authentication failed. Please try again.");
+                }
+            } else {
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Main: Signed in anonymously.");
+                } catch (error) {
+                    console.error("Main: Error signing in anonymously:", error);
+                    alert("Anonymous authentication failed. Please try again.");
+                }
+            }
+        }
+    });
+
 
     // --- Password Protection (TEMPORARILY BYPASSED FOR DEVELOPMENT) ---
     // This logic only applies to index.html's password overlay
@@ -28,16 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (passwordOverlay && mainContent) {
         passwordOverlay.classList.add('hidden');
         mainContent.style.display = 'block';
-    }
-
-
-    // Initialize the tracker only if on index.html
-    if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html')) {
-        initializeCrusadeTracker();
-    } else {
-        // For other pages (schedule.html, admin.html), just start version check
-        // The admin.html page will load its own admin.js for password protection
-        setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
     }
 
 
@@ -68,41 +105,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const hash = window.location.hash;
         console.log('Current hash:', hash);
 
-        // Ensure these elements exist before trying to manipulate them
         if (factionProgressSection && armyRosterSection && planetaryControlSection && resourcesSection) {
-            // Hide all main sections by default
             factionProgressSection.classList.add('hidden');
             armyRosterSection.classList.add('hidden');
             planetaryControlSection.classList.add('hidden');
             resourcesSection.classList.add('hidden');
 
-            // Reset army detail view state
             armyListOverview.classList.remove('hidden');
             armyDetailPageContainer.classList.add('hidden');
-            armyDetailContent.innerHTML = ''; // Clear previous detail content
+            armyDetailContent.innerHTML = '';
 
             if (hash.startsWith('#army-')) {
-                const armyId = hash.substring(6); // Remove '#army-' prefix
+                const armyId = hash.substring(6);
                 renderArmyDetailPage(armyId);
-                armyRosterSection.classList.remove('hidden'); // Show the army section
+                armyRosterSection.classList.remove('hidden');
             } else {
-                // Default view: show all main sections
                 factionProgressSection.classList.remove('hidden');
                 armyRosterSection.classList.remove('hidden');
                 planetaryControlSection.classList.remove('hidden');
                 resourcesSection.classList.remove('hidden');
-                filterArmies(factionFilterDropdown.value); // Re-render with current filter
+                filterArmies(factionFilterDropdown.value);
             }
         }
     }
 
     // --- Auto-Refresh Logic ---
-    let currentAppVersion = '1.0.0'; // Default initial version (matches version.json)
-    const VERSION_CHECK_INTERVAL = 5000; // Check every 5 seconds (for development)
+    let currentAppVersion = '1.0.0';
+    const VERSION_CHECK_INTERVAL = 5000;
 
     async function checkAppVersion() {
         try {
-            // Add a cache-busting parameter to ensure we always get the latest version.json
             const response = await fetch(`data/version.json?t=${new Date().getTime()}`);
             const data = await response.json();
             const latestVersion = data.version;
@@ -110,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (latestVersion !== currentAppVersion) {
                 console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
                 alert("A new version of the Crusade Tracker is available! The page will now refresh.");
-                window.location.reload(true); // Force a hard reload from the server
+                window.location.reload(true);
             }
         } catch (error) {
             console.error('Error checking app version:', error);
@@ -121,45 +153,59 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initializeCrusadeTracker() {
         console.log("Crusade Tracker Initialized!");
 
+        if (!isAuthReady) {
+            console.log("Main: Authentication not ready, retrying initializeCrusadeTracker...");
+            return; // Wait for auth to be ready
+        }
+
         try {
-            const [factionsRes, armiesRes, planetsRes, versionRes] = await Promise.all([
+            // Fetch static data first
+            const [factionsRes, planetsRes, versionRes] = await Promise.all([
                 fetch('data/factions.json'),
-                fetch('data/armies.json'),
                 fetch('data/planets.json'),
                 fetch('data/version.json')
             ]);
 
             factionsData = await factionsRes.json();
-            armiesData = await armiesRes.json();
             planetsData = await planetsRes.json();
             currentAppVersion = (await versionRes.json()).version;
 
-            console.log('Data loaded:', { factionsData, armiesData, planetsData, currentAppVersion });
+            // Now, set up real-time listener for armies from Firestore
+            const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
+            onSnapshot(armiesCollectionRef, (snapshot) => {
+                armiesData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                console.log('Main: Armies data updated from Firestore.', armiesData);
 
-            // Populate faction filter dropdown
-            if (factionFilterDropdown) { // Ensure dropdown exists before populating
+                // Re-render components that depend on armiesData
                 populateFactionFilter(factionsData);
-            }
-
-            // Initial render of components
-            renderFactionChart(factionsData, armiesData);
-            renderPlanets(planetsData);
+                renderFactionChart(factionsData, armiesData);
+                renderPlanets(planetsData); // Planets render depends on armiesData for control info
+                router(); // Re-run router to ensure correct view with updated data
+            }, (error) => {
+                console.error('Main: Error listening to armies data from Firestore:', error);
+                if (mainContent) {
+                    mainContent.innerHTML = `<p style="color: white; text-align: center;">
+                                                Failed to load army data from database.
+                                            </p>`;
+                }
+            });
 
             // Set up hash-based routing
             window.addEventListener('hashchange', router);
-            router(); // Call router once on load to handle initial URL
 
             // Set up filter event listener
-            if (factionFilterDropdown) { // Ensure dropdown exists before adding listener
+            if (factionFilterDropdown) {
                 factionFilterDropdown.addEventListener('change', (event) => {
                     filterArmies(event.target.value);
                 });
             }
 
-            // FIX: Add event listener for the "Back to All Armies" button
-            if (backToRosterBtn) { // Ensure button exists before adding listener
+            if (backToRosterBtn) {
                 backToRosterBtn.addEventListener('click', () => {
-                    window.location.hash = ''; // Clear the hash to go back to the default view
+                    window.location.hash = '';
                 });
             }
 
@@ -167,10 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 
         } catch (error) {
-            console.error('Error loading data:', error);
+            console.error('Error loading static data or setting up Firestore listener:', error);
             if (mainContent) {
                 mainContent.innerHTML = `<p style="color: white; text-align: center;">
-                                            Failed to load campaign data. Please check the data files and try again.
+                                            Failed to load campaign data. Please check the data files and database connection.
                                         </p>`;
             }
         }
@@ -199,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Faction Progress Stacked Bar Graph ---
     function renderFactionChart(factions, armies) {
         const ctx = document.getElementById('factionBarChart');
-        if (!ctx) return; // Ensure canvas exists
+        if (!ctx) return;
 
         const factionLabels = factions.map(f => f.name);
         const factionIndexMap = new Map(factionLabels.map((name, index) => [name, index]));
@@ -223,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: army.name,
                 data: data,
                 backgroundColor: armyColor,
-                borderColor: 'rgba(255, 255, 255, 0.6)', // White border for bars
+                borderColor: 'rgba(255, 255, 255, 0.6)',
                 borderWidth: 1
             });
         });
@@ -245,10 +291,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: {
                         stacked: true,
                         ticks: {
-                            color: 'white' // White color for x-axis ticks
+                            color: 'white'
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' // Subtle white grid lines
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     },
                     y: {
@@ -256,10 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         beginAtZero: true,
                         max: 400,
                         ticks: {
-                            color: 'white' // White color for y-axis ticks
+                            color: 'white'
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' // Subtle white grid lines
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     }
                 },
@@ -267,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: 'white', // White color for legend labels
+                            color: 'white',
                             boxWidth: 20,
                             padding: 10
                         }
@@ -275,11 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     tooltip: {
                         mode: 'index',
                         intersect: false,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark tooltip background
-                        borderColor: 'white', // White tooltip border
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        borderColor: 'white',
                         borderWidth: 1,
-                        titleColor: 'white', // White tooltip title
-                        bodyColor: 'white', // White tooltip body
+                        titleColor: 'white',
+                        bodyColor: 'white',
                         callbacks: {
                             title: function(context) {
                                 if (context.length > 0) {
@@ -311,11 +357,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Army List Overview (main page) ---
     function renderArmyListOverview(armiesToRender) {
-        if (!armyListOverview) return; // Ensure element exists
+        if (!armyListOverview) return;
 
-        armyListOverview.innerHTML = ''; // Clear previous content
-        armyListOverview.classList.remove('hidden'); // Ensure visible
-        armyDetailPageContainer.classList.add('hidden'); // Ensure detail page is hidden
+        armyListOverview.innerHTML = '';
+        armyListOverview.classList.remove('hidden');
+        armyDetailPageContainer.classList.add('hidden');
+        armyDetailContent.innerHTML = '';
 
         if (armiesToRender.length === 0) {
             armyListOverview.innerHTML = '<p style="text-align: center; color: white;">No armies found for this filter.</p>';
@@ -325,17 +372,19 @@ document.addEventListener('DOMContentLoaded', () => {
         armiesToRender.forEach(army => {
             const armyCard = document.createElement('div');
             armyCard.classList.add('army-card');
+            armyCard.dataset.armyId = army.id;
+
             armyCard.innerHTML = `
                 <div class="army-card-header">
                     <h3>${army.name}</h3>
                 </div>
                 <p><strong>Faction:</strong> ${army.faction}</p>
-                <p>${army.description.substring(0, 100)}...</p>
+                <p>${army.description ? army.description.substring(0, 100) + '...' : 'No description.'}</p>
                 <button class="view-button" data-army-id="${army.id}">View Details</button>
             `;
             armyCard.querySelector('.view-button').addEventListener('click', (e) => {
                 const armyId = e.target.dataset.armyId;
-                window.location.hash = `#army-${armyId}`; // Change URL hash to trigger router
+                window.location.hash = `#army-${armyId}`;
             });
             armyListOverview.appendChild(armyCard);
         });
@@ -343,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Army Detail Page ---
     function renderArmyDetailPage(armyId) {
-        if (!armyDetailContent || !armyListOverview || !armyDetailPageContainer) return; // Ensure elements exist
+        if (!armyDetailContent || !armyListOverview || !armyDetailPageContainer) return;
 
         const army = armiesData.find(a => a.id === armyId);
         if (!army) {
@@ -351,14 +400,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        armyListOverview.classList.add('hidden'); // Hide the overview list
-        armyDetailPageContainer.classList.remove('hidden'); // Show the detail container
+        armyListOverview.classList.add('hidden');
+        armyDetailPageContainer.classList.remove('hidden');
 
         armyDetailContent.innerHTML = `
             <h3>${army.name}</h3>
             <p><strong>Player:</strong> ${army.player}</p>
             <p><strong>Faction:</strong> ${army.faction}</p>
-            <p><strong>Description:</strong> ${army.description}</p>
+            <p><strong>Description:</strong> ${army.description || 'N/A'}</p>
             <p><strong>Crusade Points:</strong> ${army.crusade_points}</p>
             <p><strong>Battles Played:</strong> ${army.battles_played}</p>
             <p><strong>Victories:</strong> ${army.victories}</p>
@@ -371,18 +420,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Planetary Control (Planets) ---
     const planetsContainer = document.getElementById('planets-container');
-    let currentActivePlanetId = null; // To track which planet is in detail view
+    let currentActivePlanetId = null;
 
     function renderPlanets(planets) {
-        if (!planetsContainer) return; // Ensure element exists
+        if (!planetsContainer) return;
 
-        planetsContainer.innerHTML = ''; // Clear previous content
-        planetsContainer.classList.remove('single-view'); // Ensure not in single view initially
+        planetsContainer.innerHTML = '';
+        planetsContainer.classList.remove('single-view');
 
-        // Create and append the back button at the top of the container
         const backButton = document.createElement('button');
         backButton.id = 'back-to-planets-btn';
-        backButton.classList.add('button', 'back-button', 'hidden'); // Hidden by default
+        backButton.classList.add('button', 'back-button', 'hidden');
         backButton.textContent = 'Back to All Planets';
         backButton.addEventListener('click', showAllPlanets);
         planetsContainer.appendChild(backButton);
@@ -390,18 +438,16 @@ document.addEventListener('DOMContentLoaded', () => {
         planets.forEach(planet => {
             const planetCard = document.createElement('div');
             planetCard.classList.add('planet-card');
-            planetCard.dataset.planetId = planet.id; // Store planet ID for click handling
+            planetCard.dataset.planetId = planet.id;
 
-            // --- Simplified Structure for Planet Visuals ---
             const planetImageContainer = document.createElement('div');
             planetImageContainer.classList.add('planet-image-container');
 
             const planetImage = document.createElement('img');
             planetImage.classList.add('planet-image');
-            planetImage.src = planet.image || `images/planet1.png`; // Placeholder if image not found
+            planetImage.src = planet.image || `images/planet1.png`;
             planetImage.alt = planet.name;
 
-            // Percentage Overlay (still based on factions for visual consistency of the planet itself)
             const totalFactionPercentage = planet.army_control.reduce((sum, ac) => sum + ac.percentage, 0);
             let currentHeight = 0;
             const factionAggregatedControl = {};
@@ -416,7 +462,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sortedFactions.forEach(factionName => {
                 const percentage = factionAggregatedControl[factionName];
                 const faction = factionsData.find(f => f.name === factionName);
-                // Use Auspex green for faction control overlay, or a base color if faction not found
                 const color = faction ? `rgba(57, 255, 20, ${0.5 + (factionsData.indexOf(faction) * 0.1)})` : 'rgba(128, 128, 128, 0.5)';
 
                 const segmentDiv = document.createElement('div');
@@ -439,29 +484,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             planetImageContainer.appendChild(planetImage);
-            planetCard.appendChild(planetImageContainer); // Append the simplified planet image container
+            planetCard.appendChild(planetImageContainer);
 
-            // Short info for initial all-planets view (always visible now)
             const planetInfoShort = document.createElement('div');
-            planetInfoShort.classList.add('planet-info-short'); // Renamed class for clarity
+            planetInfoShort.classList.add('planet-info-short');
             planetInfoShort.innerHTML = `
                 <h3>${planet.name}</h3>
-                <p>${planet.description.substring(0, 50)}...</p>
+                <p>${planet.description ? planet.description.substring(0, 50) + '...' : 'No description.'}</p>
             `;
             planetCard.appendChild(planetInfoShort);
 
-            // Container for detailed info (initially hidden)
             const planetDetailContentInCard = document.createElement('div');
             planetDetailContentInCard.classList.add('planet-detail-content-in-card');
             planetCard.appendChild(planetDetailContentInCard);
 
-
-            // Add click listener for detailed view
             planetCard.addEventListener('click', () => {
                 if (currentActivePlanetId === planet.id) {
-                    showAllPlanets(); // If clicking the active planet, go back to all planets
+                    showAllPlanets();
                 } else {
-                    showPlanetDetail(planet.id); // Otherwise, show this planet's detail
+                    showPlanetDetail(planet.id);
                 }
             });
 
@@ -470,16 +511,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showPlanetDetail(planetId) {
-        if (!planetsContainer) return; // Ensure element exists
+        if (!planetsContainer) return;
 
         const selectedPlanet = planetsData.find(p => p.id === planetId);
         if (!selectedPlanet) return;
 
-        currentActivePlanetId = planetId; // Set the active planet
+        currentActivePlanetId = planetId;
 
-        document.getElementById('back-to-planets-btn').classList.remove('hidden'); // Show back button
+        document.getElementById('back-to-planets-btn').classList.remove('hidden');
 
-        planetsContainer.classList.add('single-view'); // Add class to container for CSS effects
+        planetsContainer.classList.add('single-view');
 
         document.querySelectorAll('.planet-card').forEach(card => {
             const cardId = card.dataset.planetId;
@@ -488,20 +529,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('inactive');
             } else {
                 card.classList.remove('inactive');
-                card.classList.add('active'); // Highlight the active planet
+                card.classList.add('active');
 
-                // Populate detailed view within this active card
                 const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
                 const shortInfoDiv = card.querySelector('.planet-info-short');
 
-                // Hide short info and show detailed info
                 if (shortInfoDiv) shortInfoDiv.classList.add('hidden');
                 if (detailContentDiv) detailContentDiv.classList.remove('hidden');
 
-                // Generate HTML for army control
                 const armyControlHtml = selectedPlanet.army_control.map(ac => {
                     const army = armiesData.find(a => a.id === ac.army_id);
-                    // Use Auspex green for army control text
                     return army ? `<p style="color:var(--auspex-green-light);"><strong>${army.name}:</strong> ${ac.percentage}%</p>` : '';
                 }).join('');
 
@@ -514,7 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 detailContentDiv.innerHTML = `
                     <h3>${selectedPlanet.name}</h3>
-                    <p>${selectedPlanet.description}</p>
+                    <p>${selectedPlanet.description || 'N/A'}</p>
                     <div class="control-info">
                         <h4>Army Control:</h4>
                         ${armyControlHtml}
@@ -526,24 +563,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showAllPlanets() {
-        if (!planetsContainer) return; // Ensure element exists
+        if (!planetsContainer) return;
 
-        currentActivePlanetId = null; // Clear active planet
+        currentActivePlanetId = null;
 
-        document.getElementById('back-to-planets-btn').classList.add('hidden'); // Hide back button
+        document.getElementById('back-to-planets-btn').classList.add('hidden');
 
-        planetsContainer.classList.remove('single-view'); // Remove single view class
+        planetsContainer.classList.remove('single-view');
 
         document.querySelectorAll('.planet-card').forEach(card => {
-            card.classList.remove('inactive', 'active'); // Remove active/inactive classes
+            card.classList.remove('inactive', 'active');
 
-            // Restore short info and hide detailed info
             const shortInfoDiv = card.querySelector('.planet-info-short');
             const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
             if (shortInfoDiv) shortInfoDiv.classList.remove('hidden');
             if (detailContentDiv) {
                 detailContentDiv.classList.add('hidden');
-                detailContentDiv.innerHTML = ''; // Clear content
+                detailContentDiv.innerHTML = '';
             }
         });
     }

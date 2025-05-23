@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const battleArmyFilterDropdown = document.getElementById('battle-army-filter');
 
     let planetsData = [];
-    let armiesData = [];
+    let armiesData = []; // This will now be populated from Firestore
     let planet1Image = new Image();
     const loadedShipImages = {};
     let activeShips = [];
@@ -13,52 +13,126 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let hoveredShip = null;
 
+    // --- Firebase Variables ---
+    let db; // Firestore instance
+    let auth; // Auth instance
+    let userId = null; // Current user ID
+    let isAuthReady = false; // Flag to ensure Firestore operations happen after auth
+
+    // Reference to Firebase modules and global variables exposed by the HTML script
+    const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } = window.firebase;
+    const appId = window.__app_id;
+    const firebaseConfig = window.__firebase_config;
+    const initialAuthToken = window.__initial_auth_token;
+
+    // --- Firebase Initialization and Authentication ---
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            userId = user.uid;
+            console.log("Schedule: Authenticated with user ID:", userId);
+            isAuthReady = true;
+            // Once authenticated, proceed with loading data
+            loadData();
+        } else {
+            // User is signed out, or not yet signed in. Sign in anonymously if no custom token.
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Schedule: Signed in with custom token.");
+                } catch (error) {
+                    console.error("Schedule: Error signing in with custom token:", error);
+                    alert("Authentication failed. Please try again.");
+                }
+            } else {
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Schedule: Signed in anonymously.");
+                } catch (error) {
+                    console.error("Schedule: Anonymous authentication failed. Please try again.");
+                    alert("Anonymous authentication failed. Please try again.");
+                }
+            }
+        }
+    });
+
     // --- Data Loading ---
     async function loadData() {
-        try {
-            const [planetsRes, armiesRes] = await Promise.all([
-                fetch('data/planets.json'),
-                fetch('data/armies.json')
-            ]);
-            planetsData = await planetsRes.json();
-            armiesData = await armiesRes.json();
+        if (!isAuthReady) {
+            console.log("Schedule: Authentication not ready, retrying loadData...");
+            return; // Wait for auth to be ready
+        }
 
+        try {
+            // Fetch static planets data
+            const planetsRes = await fetch('data/planets.json');
+            planetsData = await planetsRes.json();
+
+            // Load planet1 image
             const planet1 = planetsData.find(p => p.id === 'planet1');
             if (planet1) {
                 planet1Image.src = planet1.image;
                 await new Promise(resolve => planet1Image.onload = resolve);
             }
 
-            const shipImagePromises = [];
-            for (let i = 0; i < armiesData.length && i < 10; i++) {
-                const shipNum = i + 1;
-                const img = new Image();
-                img.src = `images/ship${shipNum}.png`;
-                loadedShipImages[armiesData[i].id] = img;
-                shipImagePromises.push(new Promise(resolve => {
-                    img.onload = resolve;
-                    img.onerror = () => {
-                        console.warn(`Failed to load ship image: ${img.src}. Using placeholder.`);
-                        img.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23505050"/><text x="50" y="50" font-family="sans-serif" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">SHIP${shipNum}</text></svg>`;
-                        resolve();
-                    };
+            // Load specific ship images (ship1.png to ship10.png)
+            // We need armiesData to map ship images to army IDs, so this will be done in the onSnapshot callback
+            // For now, prepare a generic fallback if needed before armiesData is ready
+            loadedShipImages['generic'] = new Image();
+            loadedShipImages['generic'].src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23505050"/><text x="50" y="50" font-family="sans-serif" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">SHIP</text></svg>`;
+            await new Promise(resolve => loadedShipImages['generic'].onload = resolve);
+
+
+            // Now, set up real-time listener for armies from Firestore
+            const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
+            onSnapshot(armiesCollectionRef, async (snapshot) => {
+                armiesData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
                 }));
-            }
-            await Promise.all(shipImagePromises);
+                console.log('Schedule: Armies data updated from Firestore.', armiesData);
 
-            console.log('Schedule page data loaded:', { planetsData, armiesData, loadedShipImages });
+                // Re-load specific ship images based on updated armiesData
+                const shipImagePromises = [];
+                for (let i = 0; i < armiesData.length && i < 10; i++) {
+                    const shipNum = i + 1;
+                    const img = new Image();
+                    img.src = `images/ship${shipNum}.png`;
+                    loadedShipImages[armiesData[i].id] = img;
+                    shipImagePromises.push(new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = () => {
+                            console.warn(`Failed to load ship image: ${img.src}. Using placeholder.`);
+                            img.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23505050"/><text x="50" y="50" font-family="sans-serif" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">SHIP${shipNum}</text></svg>`;
+                            resolve();
+                        };
+                    }));
+                }
+                await Promise.all(shipImagePromises);
 
-            populateBattleArmyFilter(armiesData);
-            generatedBattles = generateBattles(armiesData, 3);
-            console.log('Generated Battles:', generatedBattles);
 
-            resizeCanvas();
-            renderWeeklyBattles(generatedBattles, 'all');
+                // Re-render components that depend on armiesData
+                populateBattleArmyFilter(armiesData);
+                generatedBattles = generateBattles(armiesData, 3);
+                renderScene(); // This will call renderScene with updated armiesData
+                renderWeeklyBattles(generatedBattles, battleArmyFilterDropdown.value); // Re-render with current filter
+            }, (error) => {
+                console.error('Schedule: Error listening to armies data from Firestore:', error);
+                if (canvas) canvas.style.display = 'none';
+                if (weeklyBattlesSchedule) weeklyBattlesSchedule.innerHTML = '<p style="color: var(--auspex-green-light); text-align: center;">Failed to load army data from database.</p>';
+            });
+
+            resizeCanvas(); // Initial call to set up canvas size
+            window.addEventListener('resize', resizeCanvas); // Set up resize listener
 
         } catch (error) {
-            console.error('Error loading data for schedule page:', error);
+            console.error('Error loading static data or setting up Firestore listener:', error);
             if (canvas) canvas.style.display = 'none';
-            if (weeklyBattlesSchedule) weeklyWeeklyBattlesSchedule.innerHTML = '<p style="color: var(--auspex-green-light); text-align: center;">Failed to load campaign data.</p>';
+            if (weeklyBattlesSchedule) weeklyBattlesSchedule.innerHTML = '<p style="color: var(--auspex-green-light); text-align: center;">Failed to load campaign data. Please check the data files and database connection.</p>';
         }
     }
 
@@ -66,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resizeCanvas() {
         const container = canvas.parentElement;
         canvas.width = container.clientWidth;
-        canvas.height = Math.min(container.clientWidth * 0.8, 650); // Adjusted aspect ratio and max height for more room
+        canvas.height = Math.min(container.clientWidth * 0.8, 650);
         renderScene();
     }
 
@@ -80,10 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const planetRadius = Math.min(canvas.width, canvas.height) * 0.28; // Planet slightly bigger
-        const shipCircleRadius = planetRadius * 1.9; // Ships further out
-        const shipWidth = planetRadius * 0.5; // Ships wider
-        const shipHeight = planetRadius * 0.3; // Ships proportional height (adjust as needed)
+        const planetRadius = Math.min(canvas.width, canvas.height) * 0.28;
+        const shipCircleRadius = planetRadius * 1.9;
+        const shipWidth = planetRadius * 0.5;
+        const shipHeight = planetRadius * 0.3;
 
         // Draw Planet 1
         ctx.save();
@@ -105,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         activeShips = [];
 
-        // Draw Ships and Lines
         const armiesToDisplay = armiesData.slice(0, 10);
         const totalArmies = armiesToDisplay.length;
 
@@ -144,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 height: shipHeight,
                 centerX: shipX,
                 centerY: shipY,
-                angle: angle // Store angle for positioning text
+                angle: angle
             });
         });
 
@@ -182,36 +255,32 @@ document.addEventListener('DOMContentLoaded', () => {
         let textAlign = 'center';
         let textBaseline = 'middle';
 
-        // Determine position based on angle (quadrant)
-        // Adjust text position to be outside the circle of ships,
-        // and to the side/above/below based on quadrant.
-        const offsetDistance = Math.max(shipWidth, shipHeight) / 2 + 15; // Distance from ship edge
+        const offsetDistance = Math.max(shipWidth, shipHeight) / 2 + 15;
 
-        if (angle > -Math.PI * 0.25 && angle <= Math.PI * 0.25) { // Right side
+        if (angle > -Math.PI * 0.25 && angle <= Math.PI * 0.25) {
             textX = shipX + offsetDistance;
             textY = shipY;
             textAlign = 'left';
-        } else if (angle > Math.PI * 0.25 && angle <= Math.PI * 0.75) { // Bottom side
+        } else if (angle > Math.PI * 0.25 && angle <= Math.PI * 0.75) {
             textX = shipX;
             textY = shipY + offsetDistance;
             textBaseline = 'top';
-        } else if (angle > Math.PI * 0.75 || angle <= -Math.PI * 0.75) { // Left side
+        } else if (angle > Math.PI * 0.75 || angle <= -Math.PI * 0.75) {
             textX = shipX - offsetDistance;
             textY = shipY;
             textAlign = 'right';
-        } else { // Top side (angle > -Math.PI * 0.75 and <= -Math.PI * 0.25)
+        } else {
             textX = shipX;
             textY = shipY - offsetDistance;
             textBaseline = 'bottom';
         }
 
-        // Calculate background rectangle position based on final text position
         let rectX, rectY;
         if (textAlign === 'center') {
             rectX = textX - rectWidth / 2;
         } else if (textAlign === 'left') {
             rectX = textX;
-        } else { // 'right'
+        } else {
             rectX = textX - rectWidth;
         }
 
@@ -219,12 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
             rectY = textY - rectHeight / 2;
         } else if (textBaseline === 'top') {
             rectY = textY;
-        } else { // 'bottom'
+        } else {
             rectY = textY - rectHeight;
         }
 
-
-        // Draw background rectangle
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.strokeStyle = 'var(--auspex-green-light)';
         ctx.lineWidth = 1;
@@ -235,21 +302,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Draw text
-        ctx.fillStyle = 'white'; // Explicitly white text
+        ctx.fillStyle = 'white';
         ctx.textAlign = textAlign;
-        ctx.textBaseline = 'top'; // Always align text to top of its line within the box
+        ctx.textBaseline = 'top';
 
-        // Army Name
         ctx.font = 'bold 14px "Inter"';
         ctx.fillText(armyName, textX, rectY + padding);
 
-        // Player Name
         ctx.font = '12px "Inter"';
-        ctx.fillStyle = 'white'; // Explicitly white text
+        ctx.fillStyle = 'white';
         ctx.fillText(playerName, textX, rectY + padding + 18);
     }
-
 
     canvas.addEventListener('mousemove', (event) => {
         const rect = canvas.getBoundingClientRect();
@@ -392,18 +455,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const tbody = document.createElement('tbody');
 
-        // Group battles by army for display
         const battlesGroupedByArmy = new Map();
 
-        // Populate the map with battles where each army is a participant
         allBattles.forEach(battle => {
-            // Add battle to army1's list
             if (!battlesGroupedByArmy.has(battle.army1.id)) {
                 battlesGroupedByArmy.set(battle.army1.id, []);
             }
             battlesGroupedByArmy.get(battle.army1.id).push({ battle: battle, isArmy1: true });
 
-            // Add battle to army2's list (if different from army1)
             if (battle.army1.id !== battle.army2.id) {
                 if (!battlesGroupedByArmy.has(battle.army2.id)) {
                     battlesGroupedByArmy.set(battle.army2.id, []);
@@ -412,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Get sorted list of army IDs to ensure consistent order (alphabetical by name)
         const sortedArmyIds = Array.from(battlesGroupedByArmy.keys()).sort((aId, bId) => {
             const armyA = armiesData.find(a => a.id === aId);
             const armyB = armiesData.find(a => a.id === bId);
@@ -420,21 +478,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (selectedArmyId === 'all') {
-            // Render all armies, grouped and numbered per army
             sortedArmyIds.forEach(armyId => {
                 const armyBattles = battlesGroupedByArmy.get(armyId);
                 const currentArmy = armiesData.find(a => a.id === armyId);
 
-                // Sort battles for this specific army by their original ID for consistent ordering
                 armyBattles.sort((a, b) => a.battle.id - b.battle.id);
 
-                let armySpecificBattleCount = 0; // Reset for each army
+                let armySpecificBattleCount = 0;
                 armyBattles.forEach(entry => {
                     const battle = entry.battle;
-                    armySpecificBattleCount++; // Increment for each battle of this army
+                    armySpecificBattleCount++;
 
                     const row = document.createElement('tr');
-                    const dataLabel = `${currentArmy.name} Battle`; // For mobile view
+                    const dataLabel = `${currentArmy.name} Battle`;
 
                     row.innerHTML = `
                         <td data-label="${dataLabel}">${currentArmy.name} Battle ${armySpecificBattleCount}</td>
@@ -447,11 +503,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         } else {
-            // Render only battles for the selected army, numbered 1, 2, 3
             const selectedArmyBattles = battlesGroupedByArmy.get(selectedArmyId) || [];
             const currentArmy = armiesData.find(a => a.id === selectedArmyId);
 
-            // Sort battles for the selected army by their original ID
             selectedArmyBattles.sort((a, b) => a.battle.id - b.battle.id);
 
             let armySpecificBattleCount = 0;
@@ -478,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-
         if (tbody.children.length === 0) {
             weeklyBattlesSchedule.innerHTML = '<p style="text-align: center; color: var(--auspex-medium-grey);">No battles found for this selection.</p>';
             return;
@@ -487,8 +540,4 @@ document.addEventListener('DOMContentLoaded', () => {
         table.appendChild(tbody);
         weeklyBattlesSchedule.appendChild(table);
     }
-
-    // --- Initialize ---
-    window.addEventListener('resize', resizeCanvas);
-    loadData(); // Start loading data and rendering
 });
