@@ -2,7 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordOverlay = document.getElementById('admin-password-overlay');
     const passwordInput = document.getElementById('admin-password-input');
     const passwordSubmit = document.getElementById('admin-password-submit');
-    const adminContent = document.getElementById('admin-content'); // Main content of the admin page
+    const adminContent = document.getElementById('admin-content');
+
+    const backToHomeOverlayBtn = document.getElementById('back-to-home-from-admin-overlay');
+    const backToHomeContentBtn = document.getElementById('back-to-home-from-admin-content');
+
 
     const CORRECT_PASSWORD = "1234"; // Admin password
 
@@ -30,6 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Add event listeners for the new "Back to Home" buttons
+    if (backToHomeOverlayBtn) {
+        backToHomeOverlayBtn.addEventListener('click', () => {
+            window.location.href = 'index.html'; // Redirect to the home page
+        });
+    }
+
+    if (backToHomeContentBtn) {
+        backToHomeContentBtn.addEventListener('click', () => {
+            window.location.href = 'index.html'; // Redirect to the home page
+        });
+    }
+
 
     // Auto-Refresh Logic (copied from main.js to keep admin.html updated)
     let currentAppVersion = '1.0.0'; // Default initial version (matches version.json)

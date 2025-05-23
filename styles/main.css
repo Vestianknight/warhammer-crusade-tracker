@@ -283,7 +283,7 @@ body {
 }
 
 .army-detail-page-container #army-detail-content p strong {
-    color: var(--auspex-green-dark); /* Bold text in a slightly darker green */
+    color: var(--auspex-green-dark);
 }
 
 
@@ -302,8 +302,7 @@ body {
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(57, 255, 20, 0.4); /* Green glow */
     border: 1px solid var(--auspex-green-dark);
-    /* Removed the previous background image as it doesn't fit the Auspex theme */
-    overflow: hidden; /* Ensure content stays within bounds */
+    overflow: hidden;
 }
 
 /* Planet Card */
@@ -402,7 +401,7 @@ body {
     transition: height 0.5s ease-out;
     opacity: 0.5;
     border-radius: 50%;
-    filter: brightness(1.2); /* Make overlay slightly brighter */
+    filter: brightness(1.2);
 }
 
 
@@ -477,13 +476,13 @@ body {
 }
 
 .planet-detail-content-in-card .battle-info {
-    background-color: var(--transparent-bg-very-dark); /* Darker transparent background */
+    background-color: var(--transparent-bg-very-dark);
     padding: 1rem;
     border-radius: 5px;
     margin-top: 1rem;
     width: calc(100% - 2rem);
     max-width: 400px;
-    box-shadow: inset 0 0 5px rgba(57, 255, 20, 0.3); /* Subtle inner glow */
+    box-shadow: inset 0 0 5px rgba(57, 255, 20, 0.3);
     border: 1px solid rgba(57, 255, 20, 0.2);
 }
 
@@ -593,6 +592,7 @@ body {
     border: 2px solid var(--auspex-green-light);
     max-width: 400px;
     width: 90%;
+    position: relative; /* For positioning the back button relative to the modal */
 }
 
 .password-modal h2 {
@@ -629,6 +629,27 @@ body {
 
 .password-modal .button {
     margin-top: 0;
+}
+
+/* Style for the "Back to Home" button within the password overlay */
+.back-to-home-button-overlay {
+    margin-top: 1.5rem; /* Space it from the password input/submit */
+    width: auto; /* Allow button to size to content */
+    padding: 0.6rem 1.2rem; /* Smaller padding for a less prominent button */
+    font-size: 0.9rem;
+    background-color: rgba(57, 255, 20, 0.05); /* Very subtle background */
+    border-color: rgba(57, 255, 20, 0.2); /* Muted border */
+    color: var(--auspex-medium-grey); /* Muted text color */
+    box-shadow: none; /* No glow */
+    text-shadow: none; /* No text shadow */
+}
+
+.back-to-home-button-overlay:hover {
+    background-color: rgba(57, 255, 20, 0.1);
+    border-color: rgba(57, 255, 20, 0.4);
+    color: var(--auspex-light-grey);
+    box-shadow: 0 0 5px rgba(57, 255, 20, 0.2);
+    transform: none; /* No lift */
 }
 
 .password-warning {
@@ -766,12 +787,12 @@ body {
 
     /* Army Detail Page Text Alignment Fix (Desktop Specific) */
     .army-detail-page-container #army-detail-content {
-        flex-direction: column; /* Keep as column for content within */
-        align-items: center; /* Center content within its div */
-        text-align: center; /* Center text within content */
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
     .army-detail-page-container #army-detail-content h3,
     .army-detail-page-container #army-detail-content p {
-        text-align: center; /* Ensure all text is centered on desktop */
+        text-align: center;
     }
 }
