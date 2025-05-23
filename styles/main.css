@@ -253,16 +253,16 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
-    position: relative; /* CRITICAL: For positioning ships absolutely within */
+    position: relative; /* For positioning back button, etc. */
     overflow: hidden; /* Ensure percentage overlay doesn't spill */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex; /* Use flexbox for overall card layout */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center items horizontally */
     justify-content: center;
     cursor: pointer; /* Indicate clickable */
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, filter 0.5s ease-in-out, background-color 0.5s ease, box-shadow 0.5s ease; /* Smooth transition for layout changes */
     width: 200px; /* Fixed width for initial view */
-    height: 250px; /* Fixed height for initial view */
+    height: auto; /* Allow height to adjust based on content */
     flex-shrink: 0; /* Prevent shrinking in flex container */
     margin: 0; /* Remove default margin */
 }
@@ -303,16 +303,37 @@ body {
     visibility: visible;
 }
 
+/* New: Top row for planet image and side ships */
+.planet-top-visuals {
+    display: flex;
+    align-items: center; /* Vertically center ships with planet */
+    justify-content: center;
+    width: 100%; /* Take full width of the card */
+    margin-bottom: 0.5rem; /* Space between top visuals and bottom ships/text */
+}
+
+.ships-left-container,
+.ships-right-container {
+    display: flex;
+    flex-direction: column; /* Stack ships vertically if more than one */
+    align-items: center;
+    justify-content: center;
+    width: 50px; /* Fixed width for ship columns */
+    flex-shrink: 0; /* Prevent shrinking */
+    padding: 0 5px; /* Small padding */
+}
+
+/* Planet image container remains the same, but now it's a flex item */
 .planet-image-container {
     position: relative;
     width: 150px; /* Fixed size for planet image container */
     height: 150px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin: 0 10px; /* Space between planet and ships */
     border: 3px solid #0f3460;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
-    flex-shrink: 0; /* Prevent image container from shrinking in flex */
+    flex-shrink: 0;
 }
 
 .planets-container.single-view .planet-image-container {
@@ -338,6 +359,26 @@ body {
     transition: height 0.5s ease-out;
     opacity: 0.5; /* Adjusted opacity for more planet visibility */
     border-radius: 50%; /* Ensure overlay segments are rounded */
+}
+
+/* New: Bottom row for ships */
+.ships-bottom-row {
+    display: flex;
+    justify-content: space-around; /* Distribute bottom ships */
+    width: 100%;
+    margin-top: 0.5rem; /* Space from top visuals */
+    margin-bottom: 1rem; /* Space before text */
+}
+
+.ships-bottom-left-container,
+.ships-bottom-right-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px; /* Fixed width for ship columns */
+    flex-shrink: 0;
+    padding: 0 5px;
 }
 
 
@@ -435,31 +476,11 @@ body {
 .ship-image {
     width: 50px; /* Size of the ship */
     height: auto;
-    position: absolute; /* Crucial for positioning */
+    /* Removed absolute positioning here, now handled by parent flex containers */
     z-index: 10; /* Ensure ship is on top */
     filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; /* Smooth movement */
-}
-
-/* Specific positioning for ships */
-.ship-top-left {
-    top: 10px;
-    left: 10px;
-}
-
-.ship-top-right {
-    top: 10px;
-    right: 10px;
-}
-
-.ship-bottom-left {
-    bottom: 10px;
-    left: 10px;
-}
-
-.ship-bottom-right {
-    bottom: 10px;
-    right: 10px;
+    margin: 5px 0; /* Space between stacked ships */
 }
 
 /* Hide ships on inactive planets */
@@ -634,7 +655,7 @@ body {
     /* Planet card in initial grid view on larger screens */
     .planet-card {
         width: 250px; /* Slightly larger for desktop grid */
-        height: 280px;
+        height: auto; /* Ensure height is dynamic */
     }
 
     /* Active planet card in single view on larger screens */
