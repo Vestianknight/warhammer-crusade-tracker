@@ -34,17 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     //     }
     // });
 
-    // function checkPassword() {
-    //     if (passwordInput.value === CORRECT_PASSWORD) {
-    //         passwordOverlay.classList.add('hidden');
-    //         mainContent.style.display = 'block'; // Show the main content
-    //         initializeCrusadeTracker(); // Initialize the rest of the app
-    //     } else {
-    //         alert("Incorrect password. Access denied."); // Using alert for simplicity, but for production, use a custom modal.
-    //         passwordInput.value = ''; // Clear input
-    //     }
-    // }
-
     // --- AUTOMATIC INITIALIZATION (PASSWORD BYPASSED) ---
     passwordOverlay.classList.add('hidden'); // Hide the overlay immediately
     mainContent.style.display = 'block'; // Show main content immediately
@@ -429,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="battle-info">
                         <h4>Current Battle:</h4>
                         <p>${selectedPlanet.battle_reason}</p>
-                        ${fightingArmy ? `<p><strong>Army:</strong> ${fightingArmy.name}</p>` : ''}
+                        ${fightingArmy ? `<p><strong>Primary Army:</strong> ${fightingArmy.name}</p>` : ''}
                     </div>
                 ` : '';
 
