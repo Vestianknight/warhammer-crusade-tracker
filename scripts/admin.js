@@ -1,7 +1,7 @@
 // admin.js
 // This script handles the password protection for the admin page.
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Made async to await version fetch
     const passwordOverlay = document.getElementById('admin-password-overlay');
     const passwordInput = document.getElementById('admin-password-input');
     const passwordSubmit = document.getElementById('admin-password-submit');
@@ -10,9 +10,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToHomeOverlayBtn = document.getElementById('back-to-home-from-admin-overlay');
     const backToHomeContentBtn = document.getElementById('back-to-home-from-admin-content');
 
-
     const CORRECT_PASSWORD = "1234"; // Admin password
 
+    let currentAppVersion = '0.0.0'; // Initialize with a placeholder or very old version
+
+    // --- Auto-Refresh Logic (Moved and modified for correct initialization) ---
+    const VERSION_CHECK_INTERVAL = 5000; // Check every 5 seconds (for development)
+
+    async function initializeVersion() {
+        try {
+            const response = await fetch(`data/version.json?t=${new Date().getTime()}`);
+            const data = await response.json();
+            currentAppVersion = data.version; // Set currentAppVersion based on loaded file
+            console.log(`Admin: Initial app version loaded: ${currentAppVersion}`);
+        } catch (error) {
+            console.error('Admin: Error loading initial app version:', error);
+            // Fallback if version.json cannot be loaded
+            currentAppVersion = 'fallback-version';
+        }
+    }
+
+    async function checkAppVersion() {
+        try {
+            const response = await fetch(`data/version.json?t=${new Date().getTime()}`);
+            const data = await response.json();
+            const latestVersion = data.version;
+
+            if (latestVersion !== currentAppVersion) {
+                console.log(`Admin: New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
+                alert("A new version of the Crusade Tracker is available! The page will now refresh.");
+                window.location.reload(true); // Force a hard reload from the server
+            }
+        } catch (error) {
+            console.error('Admin: Error checking app version:', error);
+        }
+    }
+
+    // Call initializeVersion immediately on DOMContentLoaded
+    await initializeVersion();
+    // Start periodic version check only after currentAppVersion is initialized
+    setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
+
+
+    // --- Password Protection Logic ---
     // Check if elements exist before adding listeners (important for robustness)
     if (passwordOverlay && passwordInput && passwordSubmit && adminContent) {
         // Initially show the overlay
@@ -24,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 passwordOverlay.classList.add('hidden');
                 adminContent.style.display = 'block'; // Show content
                 passwordInput.value = ''; // Clear password field
-                // NEW: Call the function from admin_data.js to load and render army data
+                // Call the function from admin_data.js to load and render army data
                 if (window.loadAdminArmies) {
                     window.loadAdminArmies();
                 } else {
@@ -56,29 +96,4 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html'; // Redirect to the home page
         });
     }
-
-
-    // Auto-Refresh Logic (copied from main.js to keep admin.html updated)
-    let currentAppVersion = '1.0.0'; // Default initial version (matches version.json)
-    const VERSION_CHECK_INTERVAL = 5000; // Check every 5 seconds (for development)
-
-    async function checkAppVersion() {
-        try {
-            // Add a cache-busting parameter to ensure we always get the latest version.json
-            const response = await fetch(`data/version.json?t=${new Date().getTime()}`);
-            const data = await response.json();
-            const latestVersion = data.version;
-
-            if (latestVersion !== currentAppVersion) {
-                console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
-                alert("A new version of the Crusade Tracker is available! The page will now refresh.");
-                window.location.reload(true); // Force a hard reload from the server
-            }
-        } catch (error) {
-            console.error('Error checking app version:', error);
-        }
-    }
-
-    // Start periodic version check for the admin page
-    setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 });
