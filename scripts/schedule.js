@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load specific ship images (ship1.png to ship10.png)
             const shipImagePromises = [];
-            // Assuming armiesData has at least 10 armies for 10 ships
+            // Assuming armiesData has at least 10 armies for 10 ships, or fewer if less are available
             for (let i = 0; i < armiesData.length && i < 10; i++) {
                 const shipNum = i + 1;
                 const img = new Image();
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Initial render
             resizeCanvas(); // This will call renderScene
-            renderWeeklyBattles(generatedBattles); // Render all battles initially
+            renderWeeklyBattles(generatedBattles, 'all'); // Render all battles initially
 
         } catch (error) {
             console.error('Error loading data for schedule page:', error);
@@ -175,21 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawShipInfoOnCanvas(ship, shipX, shipY, shipSize) {
         const textOffset = shipSize / 2 + 10; // Offset text from ship image
-        const textX = shipX;
-        let textY = shipY - textOffset; // Start above the ship
-
-        ctx.font = 'bold 14px "Inter"';
-        ctx.fillStyle = 'var(--auspex-green-light)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.shadowColor = 'var(--auspex-green-light)';
-        ctx.shadowBlur = 8;
-
         const armyName = ship.name;
         const playerName = `Player: ${ship.player}`;
 
-        // Measure text for background rectangle
+        // Set font for measuring
+        ctx.font = 'bold 14px "Inter"';
         const nameWidth = ctx.measureText(armyName).width;
+        ctx.font = '12px "Inter"';
         const playerWidth = ctx.measureText(playerName).width;
         const maxWidth = Math.max(nameWidth, playerWidth);
 
@@ -197,14 +189,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const rectWidth = maxWidth + padding * 2;
         const rectHeight = 30 + padding * 2; // Height for two lines of text
 
-        // Adjust textY to draw player name below army name
-        ctx.fillText(armyName, textX, textY);
-        ctx.font = '12px "Inter"'; // Smaller font for player name
-        ctx.fillStyle = 'var(--auspex-light-grey)';
-        ctx.textBaseline = 'top';
-        ctx.fillText(playerName, textX, textY + 4); // Player name below army name
+        // Calculate background rectangle position
+        const rectX = shipX - rectWidth / 2;
+        const rectY = shipY - textOffset - rectHeight; // Position above the ship
 
+        // Draw background rectangle
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'; // Dark background for readability
+        ctx.strokeStyle = 'var(--auspex-green-light)';
+        ctx.lineWidth = 1;
+        ctx.shadowColor = 'var(--auspex-green-light)';
+        ctx.shadowBlur = 8;
+        ctx.roundRect(rectX, rectY, rectWidth, rectHeight, 5); // Rounded corners
+        ctx.fill();
+        ctx.stroke();
         ctx.shadowBlur = 0; // Reset shadow
+
+        // Draw text
+        ctx.fillStyle = 'var(--auspex-green-light)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top'; // Align text to the top of the line
+
+        // Army Name
+        ctx.font = 'bold 14px "Inter"';
+        ctx.fillText(armyName, shipX, rectY + padding);
+
+        // Player Name
+        ctx.font = '12px "Inter"';
+        ctx.fillStyle = 'var(--auspex-light-grey)';
+        ctx.fillText(playerName, shipX, rectY + padding + 18); // 18px below army name
     }
 
 
@@ -269,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let battleIdCounter = 1;
         let attempts = 0;
-        const maxAttempts = allArmies.length * matchesPerArmy * 2; // Safety break
+        const maxAttempts = allArmies.length * matchesPerArmy * 3; // Increased safety break
 
         while (Object.values(armyMatchCount).some(count => count < matchesPerArmy) && attempts < maxAttempts) {
             attempts++;
@@ -278,7 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const potentialParticipants = allArmies.filter(army => armyMatchCount[army.id] < matchesPerArmy);
 
             if (potentialParticipants.length < 2) {
-                // If only one army left, try to pair it with someone who still has capacity
                 if (potentialParticipants.length === 1 && armyMatchCount[potentialParticipants[0].id] < matchesPerArmy) {
                     const soloArmy = potentialParticipants[0];
                     const possibleOpponent = allArmies.find(
@@ -287,10 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
                              !armyOpponents[soloArmy.id].has(a.id)
                     );
                     if (possibleOpponent) {
-                        potentialParticipants.push(possibleOpponent);
+                         potentialParticipants.push(possibleOpponent);
                     }
                 }
-                if (potentialParticipants.length < 2) break; // Cannot form more battles
+                if (potentialParticipants.length < 2) break;
             }
 
             // Shuffle and pick two armies
@@ -306,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Ensure both armies still need matches
             if (armyMatchCount[army1.id] < matchesPerArmy && armyMatchCount[army2.id] < matchesPerArmy) {
                 battles.push({
-                    id: battleIdCounter++,
+                    id: battleIdCounter++, // Keep original ID for sorting consistency within army blocks
                     army1: army1,
                     army2: army2,
                     outcome: 'Undecided'
@@ -332,27 +343,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         battleArmyFilterDropdown.addEventListener('change', (event) => {
             const selectedArmyId = event.target.value;
-            let filteredBattles = generatedBattles;
-
-            if (selectedArmyId !== 'all') {
-                filteredBattles = generatedBattles.filter(battle =>
-                    battle.army1.id === selectedArmyId || battle.army2.id === selectedArmyId
-                );
-            }
-            renderWeeklyBattles(filteredBattles, selectedArmyId);
+            // Pass the full generatedBattles and the selectedArmyId
+            renderWeeklyBattles(generatedBattles, selectedArmyId);
         });
     }
 
     // --- Weekly Battles Schedule Table ---
-    function renderWeeklyBattles(battlesToRender, selectedArmyId = 'all') {
+    function renderWeeklyBattles(allBattles, selectedArmyId = 'all') {
         weeklyBattlesSchedule.innerHTML = ''; // Clear previous content
 
-        if (battlesToRender.length === 0) {
+        // Filter battles based on selected army, if not 'all'
+        let battlesToDisplay = allBattles;
+        if (selectedArmyId !== 'all') {
+            battlesToDisplay = allBattles.filter(battle =>
+                battle.army1.id === selectedArmyId || battle.army2.id === selectedArmyId
+            );
+        }
+
+        if (battlesToDisplay.length === 0) {
             weeklyBattlesSchedule.innerHTML = '<p style="text-align: center; color: var(--auspex-medium-grey);">No battles found for this selection.</p>';
             return;
         }
 
-        // Create the table structure
         const table = document.createElement('table');
         table.classList.add('battle-schedule-table');
 
@@ -368,26 +380,61 @@ document.addEventListener('DOMContentLoaded', () => {
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        let armySpecificBattleCount = 0; // For per-army numbering
 
-        battlesToRender.forEach(battle => {
-            const row = document.createElement('tr');
+        // Group battles by army for display
+        const battlesGroupedByArmy = new Map(); // Map: armyId -> [{battle, isArmy1}, ...]
 
-            let displayBattleNumber = battle.id;
-            if (selectedArmyId !== 'all') {
-                armySpecificBattleCount++;
-                displayBattleNumber = armySpecificBattleCount;
+        battlesToDisplay.forEach(battle => {
+            // Add battle to army1's list
+            if (!battlesGroupedByArmy.has(battle.army1.id)) {
+                battlesGroupedByArmy.set(battle.army1.id, []);
             }
+            battlesGroupedByArmy.get(battle.army1.id).push({ battle: battle, isArmy1: true });
 
-            row.innerHTML = `
-                <td data-label="Battle #">${displayBattleNumber}</td>
-                <td data-label="Army 1">${battle.army1.name} (${battle.army1.player})</td>
-                <td data-label="" class="vs-cell">VS</td>
-                <td data-label="Army 2">${battle.army2.name} (${battle.army2.player})</td>
-                <td data-label="Status" class="status-cell">${battle.outcome}</td>
-            `;
-            tbody.appendChild(row);
+            // Add battle to army2's list (if different from army1)
+            if (battle.army1.id !== battle.army2.id) {
+                if (!battlesGroupedByArmy.has(battle.army2.id)) {
+                    battlesGroupedByArmy.set(battle.army2.id, []);
+                }
+                battlesGroupedByArmy.get(battle.army2.id).push({ battle: battle, isArmy1: false });
+            }
         });
+
+        // Get sorted list of army IDs to ensure consistent order (alphabetical by name)
+        const sortedArmyIds = Array.from(battlesGroupedByArmy.keys()).sort((aId, bId) => {
+            const armyA = armiesData.find(a => a.id === aId);
+            const armyB = armiesData.find(a => a.id === bId);
+            return armyA.name.localeCompare(armyB.name);
+        });
+
+        sortedArmyIds.forEach(armyId => {
+            const armyBattles = battlesGroupedByArmy.get(armyId);
+            const currentArmy = armiesData.find(a => a.id === armyId);
+
+            // Sort battles for this specific army by their original ID for consistent ordering
+            armyBattles.sort((a, b) => a.battle.id - b.battle.id);
+
+            let armySpecificBattleCount = 0; // Reset for each army
+            armyBattles.forEach(entry => {
+                const battle = entry.battle;
+                armySpecificBattleCount++; // Increment for each battle of this army
+
+                const row = document.createElement('tr');
+
+                // Set data-label for mobile view
+                const dataLabel = `${currentArmy.name} Battle`;
+
+                row.innerHTML = `
+                    <td data-label="${dataLabel}">${currentArmy.name} Battle ${armySpecificBattleCount}</td>
+                    <td data-label="Army 1">${battle.army1.name} (${battle.army1.player})</td>
+                    <td data-label="" class="vs-cell">VS</td>
+                    <td data-label="Army 2">${battle.army2.name} (${battle.army2.player})</td>
+                    <td data-label="Status" class="status-cell">${battle.outcome}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
+
         table.appendChild(tbody);
         weeklyBattlesSchedule.appendChild(table);
     }
