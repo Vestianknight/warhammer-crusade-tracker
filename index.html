@@ -10,17 +10,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-
-    </head>
+</head>
 <body>
-    <div id="password-overlay" class="password-overlay hidden">
+    <div id="password-overlay" class="password-overlay">
         <div class="password-modal">
             <h2>Access Crusade Tracker</h2>
-            <p>This page is publicly accessible.</p>
-            </div>
+            <p>Please enter the campaign password:</p>
+            <input type="password" id="password-input" placeholder="Enter password">
+            <button id="password-submit">Enter</button>
+            <p class="password-warning">
+                Note: This is a client-side password for casual privacy.
+                For stronger security, a server-side solution would be needed.
+            </p>
+        </div>
     </div>
 
-    <div id="main-content" class="main-content" style="display: block;">
+    <div id="main-content" class="main-content">
         <header class="header">
             <h1>Warhammer 40k Crusade: The <span class="campaign-name">Galactic Gauntlet</span></h1>
             <p class="intro-text">
@@ -28,11 +33,6 @@
                 the ebb and flow of war across the sector. Witness the might of your forces and the
                 struggle for dominance over vital worlds. Glory awaits!
             </p>
-            <nav class="main-nav">
-                <a href="index.html" class="active">Home</a>
-                <a href="schedule.html">Schedule</a>
-                <a href="admin.html">Admin</a>
-            </nav>
         </header>
 
         <section id="faction-progress-section" class="section">
@@ -51,7 +51,6 @@
                     </select>
             </div>
             <div id="army-list-overview" class="army-list-overview grid-container">
-                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading army data...</p>
                 </div>
             <div id="army-detail-page-container" class="army-detail-page-container hidden">
                 <button id="back-to-roster-btn" class="button back-button">Back to All Armies</button>
@@ -63,7 +62,6 @@
             <h2>Planetary Control</h2>
             <p class="sub-text">Click a planet for details.</p>
             <div id="planets-container" class="planets-container">
-                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading planet data...</p>
                 </div>
         </section>
 

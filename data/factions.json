@@ -1,38 +1,23 @@
 [
-  {
-    "id": "IMPERIUM",
-    "name": "Imperium of Man",
-    "description": "The vast, totalitarian interstellar empire comprising the majority of humanity.",
-    "color": "#007bff"
-  },
-  {
-    "id": "CHAOS",
-    "name": "Forces of Chaos",
-    "description": "Those who have fallen to the Ruinous Powers of the Warp.",
-    "color": "#dc3545"
-  },
-  {
-    "id": "XENOS_ORKS",
-    "name": "Orks",
-    "description": "A barbaric, green-skinned race obsessed with WAAAGH! and fighting.",
-    "color": "#28a745"
-  },
-  {
-    "id": "XENOS_TYRANIDS",
-    "name": "Tyranids",
-    "description": "An extragalactic swarm of bio-engineered horrors, consuming all life.",
-    "color": "#6f42c1"
-  },
-  {
-    "id": "XENOS_AELDARI",
-    "name": "Aeldari (Eldar)",
-    "description": "An ancient, elegant, and dying race, masters of psychic abilities.",
-    "color": "#fd7e14"
-  },
-  {
-    "id": "XENOS_NECRONS",
-    "name": "Necrons",
-    "description": "Ancient, undying robotic warriors, awakening from millennia of slumber.",
-    "color": "#20c997"
-  }
-]
+    {
+      "name": "Imperium",
+      "score": 80,
+      "color": "#4A90E2"
+    },
+    {
+      "name": "Chaos",
+      "score": 65,
+      "color": "#D0021B"
+    },
+    {
+      "name": "Xenos",
+      "score": 70,
+      "color": "#7ED321"
+    },
+    {
+      "name": "Aeldari",
+      "score": 55,
+      "color": "#F5A623"
+    }
+  ]
+  
