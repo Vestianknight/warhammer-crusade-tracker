@@ -9,11 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
     <script type="module">
+        // Import the necessary Firebase SDK functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Expose Firebase modules globally for admin_data.js to use
+        // If you plan to use Firebase Analytics, uncomment the line below.
+        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+    
+        // Expose Firebase modules globally for other JavaScript files (like main.js, admin_data.js) to use.
         window.firebase = {
             initializeApp,
             getAuth,
@@ -29,18 +32,39 @@
             query,
             where,
             getDocs
+            // If using analytics, uncomment the line below
+            // , getAnalytics
         };
-
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Expose global variables to other scripts
+    
+        // YOUR WEB APP'S FIREBASE CONFIGURATION - PASTE IT HERE
+        // This is the exact configuration you provided.
+        const firebaseConfig = {
+          apiKey: "AIzaSyBorTh8Zdx9IVAo_8FbRet2nP6FIKq94Kc",
+          authDomain: "crusade-tracker-cf3bb.firebaseapp.com",
+          projectId: "crusade-tracker-cf3bb",
+          storageBucket: "crusade-tracker-cf3bb.firebasestorage.app",
+          messagingSenderId: "980930011467",
+          appId: "1:980930011467:web:95879d8c1d0a96b266c8ce",
+          measurementId: "G-9NPC4NCPJQ" // This 'measurementId' is optional for core functionality
+        };
+    
+        // Initialize Firebase at the global scope of this script.
+        const app = initializeApp(firebaseConfig);
+        // If you plan to use analytics, uncomment the line below.
+        // const analytics = getAnalytics(app);
+    
+        // Define the 'appId' that will be used in your Firestore paths (e.g., /artifacts/{appId}/users/{userId}/armies).
+        // Using firebaseConfig.projectId is a good practice for consistency.
+        const appId = firebaseConfig.projectId; // This will be "crusade-tracker-cf3bb"
+    
+        // The 'initialAuthToken' is typically provided by specific environments (like Google Canvas).
+        // For GitHub Pages, we rely on anonymous sign-in within the JavaScript files.
+        const initialAuthToken = null;
+    
+        // Expose these critical variables globally so your other JavaScript files can access them.
         window.__app_id = appId;
-        window.__firebase_config = firebaseConfig;
+        window.__firebase_config = firebaseConfig; // Pass the actual config object
         window.__initial_auth_token = initialAuthToken;
-
     </script>
 </head>
 <body>

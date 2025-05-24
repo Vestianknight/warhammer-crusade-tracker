@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campaign Schedule - Warhammer 40k Crusade Tracker</title>
+    <title>Warhammer 40k Crusade Tracker</title>
     <base href="/warhammer-crusade-tracker/">
+
     <link rel="stylesheet" href="styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
     <script type="module">
+        // Import the necessary Firebase SDK functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Expose Firebase modules globally for other scripts to use
+        // If you plan to use Firebase Analytics, uncomment the line below.
+        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+    
+        // Expose Firebase modules globally for other JavaScript files (like main.js, admin_data.js) to use.
         window.firebase = {
             initializeApp,
             getAuth,
@@ -29,51 +35,102 @@
             query,
             where,
             getDocs
+            // If using analytics, uncomment the line below
+            // , getAnalytics
         };
-
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Expose global variables to other scripts
+    
+        // YOUR WEB APP'S FIREBASE CONFIGURATION - PASTE IT HERE
+        // This is the exact configuration you provided.
+        const firebaseConfig = {
+          apiKey: "AIzaSyBorTh8Zdx9IVAo_8FbRet2nP6FIKq94Kc",
+          authDomain: "crusade-tracker-cf3bb.firebaseapp.com",
+          projectId: "crusade-tracker-cf3bb",
+          storageBucket: "crusade-tracker-cf3bb.firebasestorage.app",
+          messagingSenderId: "980930011467",
+          appId: "1:980930011467:web:95879d8c1d0a96b266c8ce",
+          measurementId: "G-9NPC4NCPJQ" // This 'measurementId' is optional for core functionality
+        };
+    
+        // Initialize Firebase at the global scope of this script.
+        const app = initializeApp(firebaseConfig);
+        // If you plan to use analytics, uncomment the line below.
+        // const analytics = getAnalytics(app);
+    
+        // Define the 'appId' that will be used in your Firestore paths (e.g., /artifacts/{appId}/users/{userId}/armies).
+        // Using firebaseConfig.projectId is a good practice for consistency.
+        const appId = firebaseConfig.projectId; // This will be "crusade-tracker-cf3bb"
+    
+        // The 'initialAuthToken' is typically provided by specific environments (like Google Canvas).
+        // For GitHub Pages, we rely on anonymous sign-in within the JavaScript files.
+        const initialAuthToken = null;
+    
+        // Expose these critical variables globally so your other JavaScript files can access them.
         window.__app_id = appId;
-        window.__firebase_config = firebaseConfig;
+        window.__firebase_config = firebaseConfig; // Pass the actual config object
         window.__initial_auth_token = initialAuthToken;
     </script>
 </head>
 <body>
-    <div class="main-content" style="display: block;">
+    <div id="password-overlay" class="password-overlay hidden">
+        <div class="password-modal">
+            <h2>Access Crusade Tracker</h2>
+            <p>This page is publicly accessible.</p>
+            </div>
+    </div>
+
+    <div id="main-content" class="main-content" style="display: block;">
         <header class="header">
-            <h1>Campaign Schedule</h1>
+            <h1>Warhammer 40k Crusade: The <span class="campaign-name">Galactic Gauntlet</span></h1>
             <p class="intro-text">
-                Here you can find the planned battles, events, and important dates for our Crusade.
+                Welcome, commanders, to the Galactic Gauntlet Crusade! This tracker will help us monitor
+                the ebb and flow of war across the sector. Witness the might of your forces and the
+                struggle for dominance over vital worlds. Glory awaits!
             </p>
             <nav class="main-nav">
-                <a href="index.html">Home</a>
-                <a href="schedule.html" class="active">Schedule</a>
+                <a href="index.html" class="active">Home</a>
+                <a href="schedule.html">Schedule</a>
                 <a href="admin.html">Admin</a>
             </nav>
         </header>
 
-        <section class="section">
-            <h2>Sector Overview</h2>
-            <div class="auspex-display-container">
-                <canvas id="sector-auspex-canvas"></canvas>
+        <section id="faction-progress-section" class="section">
+            <h2>Faction Progress</h2>
+            <div class="chart-container">
+                <canvas id="factionBarChart"></canvas>
             </div>
         </section>
 
-        <section class="section">
-            <h2>This Week's Battles</h2>
-            <div class="battle-filter-controls">
-                <label for="battle-army-filter">View Battles for:</label>
-                <select id="battle-army-filter" class="dropdown">
-                    <option value="all">All Armies</option>
+        <section id="army-roster-section" class="section">
+            <h2>Army Roster</h2>
+            <div class="army-filter-controls">
+                <label for="faction-filter">Filter by Faction:</label>
+                <select id="faction-filter" class="dropdown">
+                    <option value="all">All Factions</option>
                     </select>
             </div>
-            <div id="weekly-battles-schedule" class="weekly-battles-schedule">
-                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading battle schedule...</p>
+            <div id="army-list-overview" class="army-list-overview grid-container">
+                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading army data...</p>
                 </div>
+            <div id="army-detail-page-container" class="army-detail-page-container hidden">
+                <button id="back-to-roster-btn" class="button back-button">Back to All Armies</button>
+                <div id="army-detail-content"></div>
+            </div>
+        </section>
+
+        <section id="planetary-control-section" class="section">
+            <h2>Planetary Control</h2>
+            <p class="sub-text">Click a planet for details.</p>
+            <div id="planets-container" class="planets-container">
+                <p style="text-align: center; color: var(--auspex-medium-grey);">Loading planet data...</p>
+                </div>
+        </section>
+
+        <section id="resources-section" class="section">
+            <h2>Useful Resources</h2>
+            <p>
+                For more Warhammer 40k Crusade resources and rules, check out
+                <a href="https://administration.goonhammer.com/" target="_blank" rel="noopener noreferrer">Goonhammer Administration</a>.
+            </p>
         </section>
 
         <footer class="footer">
@@ -81,6 +138,6 @@
         </footer>
     </div>
 
-    <script src="scripts/schedule.js"></script>
+    <script src="scripts/main.js"></script>
 </body>
 </html>
