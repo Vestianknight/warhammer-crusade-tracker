@@ -11,74 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-    <script type="module">
-        // Import the necessary Firebase SDK functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        // If you plan to use Firebase Analytics, uncomment the line below.
-        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-
-        // Expose Firebase modules globally for other JavaScript files (like main.js, admin_data.js) to use.
-        window.firebase = {
-            initializeApp,
-            getAuth,
-            signInAnonymously,
-            signInWithCustomToken,
-            onAuthStateChanged,
-            getFirestore,
-            doc,
-            getDoc,
-            setDoc,
-            onSnapshot,
-            collection,
-            query,
-            where,
-            getDocs
-            // If using analytics, uncomment the line below
-            // , getAnalytics
-        };
-
-        // YOUR WEB APP'S FIREBASE CONFIGURATION - PASTE IT HERE
-        // This is the exact configuration you provided.
-        const firebaseConfig = {
-          apiKey: "AIzaSyBorTh8Zdx9IVAo_8FbRet2nP6FIKq94Kc",
-          authDomain: "crusade-tracker-cf3bb.firebaseapp.com",
-          projectId: "crusade-tracker-cf3bb",
-          storageBucket: "crusade-tracker-cf3bb.firebasestorage.app",
-          messagingSenderId: "980930011467",
-          appId: "1:980930011467:web:95879d8c1d0a96b266c8ce",
-          measurementId: "G-9NPC4NCPJQ" // This 'measurementId' is optional for core functionality
-        };
-
-        // Initialize Firebase at the global scope of this script.
-        // Added a try-catch block for robust initialization
-        let app;
-        try {
-            app = initializeApp(firebaseConfig);
-            console.log("HTML: Firebase app initialized successfully in index.html script.");
-            // If using analytics, uncomment the line below.
-            // const analytics = getAnalytics(app);
-        } catch (e) {
-            console.error("HTML: Error initializing Firebase app in index.html script:", e);
-            alert("Firebase initialization failed in index.html. Check console for config errors.");
-        }
-
-
-        // Define the 'appId' that will be used in your Firestore paths (e.g., /artifacts/{appId}/users/{userId}/armies).
-        // Using firebaseConfig.projectId is a good practice for consistency.
-        const appId = firebaseConfig.projectId; // This will be "crusade-tracker-cf3bb"
-
-        // The 'initialAuthToken' is typically provided by specific environments (like Google Canvas).
-        // For GitHub Pages, we rely on anonymous sign-in within the JavaScript files.
-        const initialAuthToken = null;
-
-        // Expose these critical variables globally so your other JavaScript files can access them.
-        window.__app_id = appId;
-        window.__firebase_config = firebaseConfig; // Pass the actual config object
-        window.__initial_auth_token = initialAuthToken;
-    </script>
-</head>
+    </head>
 <body>
     <div id="password-overlay" class="password-overlay hidden">
         <div class="password-modal">

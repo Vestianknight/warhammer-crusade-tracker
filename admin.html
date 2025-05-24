@@ -8,64 +8,7 @@
     <link rel="stylesheet" href="styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-    <script type="module">
-        // Import the necessary Firebase SDK functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Expose Firebase modules globally for admin_data.js to use
-        window.firebase = {
-            initializeApp,
-            getAuth,
-            signInAnonymously,
-            signInWithCustomToken,
-            onAuthStateChanged,
-            getFirestore,
-            doc,
-            getDoc,
-            setDoc,
-            onSnapshot,
-            collection,
-            query,
-            where,
-            getDocs
-        };
-
-       
-        const firebaseConfig = {
-          apiKey: "AIzaSyBorTh8Zdx9IVAo_8FbRet2nP6FIKq94Kc",
-          authDomain: "crusade-tracker-cf3bb.firebaseapp.com",
-          projectId: "crusade-tracker-cf3bb",
-          storageBucket: "crusade-tracker-cf3bb.firebasestorage.app",
-          messagingSenderId: "980930011467",
-          appId: "1:980930011467:web:95879d8c1d0a96b266c8ce",
-          measurementId: "G-9NPC4NCPJQ" // This 'measurementId' is optional for core functionality
-        };
-
-        // Initialize Firebase at the global scope of this script.
-        let app;
-        try {
-            app = initializeApp(firebaseConfig);
-            console.log("HTML: Firebase app initialized successfully in admin.html script.");
-        } catch (e) {
-            console.error("HTML: Error initializing Firebase app in admin.html script:", e);
-            alert("Firebase initialization failed in admin.html. Check console for config errors.");
-        }
-
-        // Define the 'appId' that will be used in your Firestore paths.
-        const appId = firebaseConfig.projectId; // This will be "crusade-tracker-cf3bb"
-
-        // The 'initialAuthToken' is null for GitHub Pages deployments.
-        const initialAuthToken = null;
-
-        // Expose these critical variables globally.
-        window.__app_id = appId;
-        window.__firebase_config = firebaseConfig;
-        window.__initial_auth_token = initialAuthToken;
-
-    </script>
-</head>
+    </head>
 <body>
     <div id="admin-password-overlay" class="password-overlay">
         <div class="password-modal">
@@ -85,6 +28,8 @@
             <h1>Admin Panel</h1>
             <p class="intro-text">
                 Tools for campaign administrators to manage armies, planets, and overall progress.
+                <br>
+                <strong style="color: var(--warning-red);">NOTE: Data changes on this panel are NOT saved permanently without a database backend.</strong>
             </p>
             <nav class="main-nav">
                 <a href="index.html">Home</a>
@@ -96,7 +41,7 @@
         <section class="section">
             <h2>Army Management</h2>
             <div id="army-admin-list" class="army-admin-list grid-container">
-                <p id="admin-loading-message" style="text-align: center; color: var(--auspex-medium-grey);">Initializing Firebase and loading data...</p>
+                <p id="admin-loading-message" style="text-align: center; color: var(--auspex-medium-grey);">Loading army data from JSON...</p>
                 </div>
         </section>
 
