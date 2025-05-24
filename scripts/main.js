@@ -39,14 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Main: Firebase app initialized.");
     } catch (error) {
         console.error("Main: Error initializing Firebase app:", error);
-        // Do not use alert here to avoid blocking public page
         console.error("Firebase initialization failed. Check console for details.");
         if (mainContent) {
             mainContent.innerHTML = `<p style="color: white; text-align: center;">
                                         Error initializing Firebase. Please check console for details.
                                     </p>`;
         }
-        return; // Stop execution if Firebase init fails
+        return;
     }
 
 
@@ -56,10 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
             userId = user.uid;
             console.log("Main: Authenticated with user ID:", userId);
             isAuthReady = true;
-            // Once authenticated, proceed with loading data
             initializeCrusadeTracker();
         } else {
-            // User is signed out, or not yet signed in. Sign in anonymously if no custom token.
             if (initialAuthToken) {
                 try {
                     await signInWithCustomToken(auth, initialAuthToken);
@@ -133,8 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Auto-Refresh Logic ---
-    let currentAppVersion = null; // Initialized to null, will be set from version.json
-    const VERSION_CHECK_INTERVAL = 5000;
+    let currentAppVersion = null;
+    const VERSION_CHECK_INTERVAL = 30000; // Increased to 30 seconds (30000 ms)
 
     async function checkAppVersion() {
         try {
@@ -142,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             const latestVersion = data.version;
 
-            // Only trigger reload if currentAppVersion has been set AND is different
             if (currentAppVersion !== null && latestVersion !== currentAppVersion) {
                 console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
                 setTimeout(() => {
@@ -150,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.reload(true);
                 }, 100);
             } else if (currentAppVersion === null) {
-                // First time setting the version
                 currentAppVersion = latestVersion;
                 console.log(`Initial app version set to: ${currentAppVersion}`);
             }
@@ -169,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Fetch static data first
             const [factionsRes, planetsRes, versionRes] = await Promise.all([
                 fetch('data/factions.json'),
                 fetch('data/planets.json'),
@@ -178,12 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             factionsData = await factionsRes.json();
             planetsData = await planetsRes.json();
-            // Set currentAppVersion from fetched version.json on initial load
             currentAppVersion = (await versionRes.json()).version;
             console.log(`Main: Initial version loaded from file: ${currentAppVersion}`);
 
 
-            // Now, set up real-time listener for armies from Firestore
             const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
             onSnapshot(armiesCollectionRef, (snapshot) => {
                 armiesData = snapshot.docs.map(doc => ({
@@ -192,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
                 console.log('Main: Armies data updated from Firestore.', armiesData);
 
-                // Re-render components that depend on armiesData
                 populateFactionFilter(factionsData);
                 renderFactionChart(factionsData, armiesData);
                 renderPlanets(planetsData);
@@ -206,10 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Set up hash-based routing
             window.addEventListener('hashchange', router);
 
-            // Set up filter event listener
             if (factionFilterDropdown) {
                 factionFilterDropdown.addEventListener('change', (event) => {
                     filterArmies(event.target.value);
@@ -222,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Start periodic version check
             setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 
         } catch (error) {

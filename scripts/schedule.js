@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const battleArmyFilterDropdown = document.getElementById('battle-army-filter');
 
     let planetsData = [];
-    let armiesData = []; // This will now be populated from Firestore
+    let armiesData = [];
     let planet1Image = new Image();
     const loadedShipImages = {};
     let activeShips = [];
@@ -14,21 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let hoveredShip = null;
 
     // --- Firebase Variables ---
-    let db; // Firestore instance
-    let auth; // Auth instance
-    let userId = null; // Current user ID
-    let isAuthReady = false; // Flag to ensure Firestore operations happen after auth
+    let db;
+    let auth;
+    let userId = null;
+    let isAuthReady = false;
 
-    // Reference to Firebase modules and global variables exposed by the HTML script
     const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } = window.firebase;
     const appId = window.__app_id;
     const firebaseConfig = window.__firebase_config;
     const initialAuthToken = window.__initial_auth_token;
 
     // --- Firebase Initialization and Authentication ---
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
+    try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        console.log("Schedule: Firebase app initialized.");
+    } catch (error) {
+        console.error("Schedule: Error initializing Firebase app:", error);
+        // Do not use alert here
+        console.error("Firebase initialization failed. Check console for details.");
+        if (weeklyBattlesSchedule) {
+            weeklyBattlesSchedule.innerHTML = `<p style="color: var(--auspex-green-light); text-align: center;">
+                                                Error initializing Firebase. Check console for details.
+                                            </p>`;
+        }
+        return;
+    }
 
     // Listen for auth state changes
     onAuthStateChanged(auth, async (user) => {
@@ -36,25 +48,22 @@ document.addEventListener('DOMContentLoaded', () => {
             userId = user.uid;
             console.log("Schedule: Authenticated with user ID:", userId);
             isAuthReady = true;
-            // Once authenticated, proceed with loading data
             loadData();
         } else {
-            // User is signed out, or not yet signed in. Sign in anonymously if no custom token.
             if (initialAuthToken) {
                 try {
                     await signInWithCustomToken(auth, initialAuthToken);
                     console.log("Schedule: Signed in with custom token.");
                 } catch (error) {
                     console.error("Schedule: Error signing in with custom token:", error);
-                    alert("Authentication failed. Please try again.");
+                    console.error("Authentication failed. Check console for details.");
                 }
             } else {
                 try {
                     await signInAnonymously(auth);
                     console.log("Schedule: Signed in anonymously.");
                 } catch (error) {
-                    console.error("Schedule: Anonymous authentication failed. Please try again.");
-                    alert("Anonymous authentication failed. Please try again.");
+                    console.error("Schedule: Anonymous authentication failed. Check console for details.");
                 }
             }
         }
@@ -64,30 +73,29 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadData() {
         if (!isAuthReady) {
             console.log("Schedule: Authentication not ready, retrying loadData...");
-            return; // Wait for auth to be ready
+            return;
         }
 
         try {
-            // Fetch static planets data
             const planetsRes = await fetch('data/planets.json');
+            if (!planetsRes.ok) {
+                throw new Error(`HTTP error! status: ${planetsRes.status} fetching data/planets.json`);
+            }
             planetsData = await planetsRes.json();
+            console.log("Schedule: planets.json loaded:", planetsData);
 
-            // Load planet1 image
+
             const planet1 = planetsData.find(p => p.id === 'planet1');
             if (planet1) {
                 planet1Image.src = planet1.image;
                 await new Promise(resolve => planet1Image.onload = resolve);
             }
 
-            // Load specific ship images (ship1.png to ship10.png)
-            // We need armiesData to map ship images to army IDs, so this will be done in the onSnapshot callback
-            // For now, prepare a generic fallback if needed before armiesData is ready
             loadedShipImages['generic'] = new Image();
             loadedShipImages['generic'].src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23505050"/><text x="50" y="50" font-family="sans-serif" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">SHIP</text></svg>`;
             await new Promise(resolve => loadedShipImages['generic'].onload = resolve);
 
 
-            // Now, set up real-time listener for armies from Firestore
             const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
             onSnapshot(armiesCollectionRef, async (snapshot) => {
                 armiesData = snapshot.docs.map(doc => ({
@@ -96,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
                 console.log('Schedule: Armies data updated from Firestore.', armiesData);
 
-                // Re-load specific ship images based on updated armiesData
                 const shipImagePromises = [];
                 for (let i = 0; i < armiesData.length && i < 10; i++) {
                     const shipNum = i + 1;
@@ -115,24 +122,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 await Promise.all(shipImagePromises);
 
 
-                // Re-render components that depend on armiesData
                 populateBattleArmyFilter(armiesData);
                 generatedBattles = generateBattles(armiesData, 3);
-                renderScene(); // This will call renderScene with updated armiesData
-                renderWeeklyBattles(generatedBattles, battleArmyFilterDropdown.value); // Re-render with current filter
+                renderScene();
+                renderWeeklyBattles(generatedBattles, battleArmyFilterDropdown.value);
             }, (error) => {
                 console.error('Schedule: Error listening to armies data from Firestore:', error);
                 if (canvas) canvas.style.display = 'none';
-                if (weeklyBattlesSchedule) weeklyBattlesSchedule.innerHTML = '<p style="color: var(--auspex-green-light); text-align: center;">Failed to load army data from database.</p>';
+                if (weeklyBattlesSchedule) weeklyBattlesSchedule.innerHTML = `<p style="color: var(--auspex-green-light); text-align: center;">Failed to load army data from database. Check console for details.</p>`;
             });
 
-            resizeCanvas(); // Initial call to set up canvas size
-            window.addEventListener('resize', resizeCanvas); // Set up resize listener
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
 
         } catch (error) {
             console.error('Error loading static data or setting up Firestore listener:', error);
             if (canvas) canvas.style.display = 'none';
-            if (weeklyBattlesSchedule) weeklyBattlesSchedule.innerHTML = '<p style="color: var(--auspex-green-light); text-align: center;">Failed to load campaign data. Please check the data files and database connection.</p>';
+            if (weeklyBattlesSchedule) weeklyBattlesSchedule.innerHTML = `<p style="color: var(--auspex-green-light); text-align: center;">Failed to load campaign data. Check console for details.</p>`;
         }
     }
 
@@ -159,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const shipWidth = planetRadius * 0.5;
         const shipHeight = planetRadius * 0.3;
 
-        // Draw Planet 1
         ctx.save();
         ctx.beginPath();
         ctx.arc(centerX, centerY, planetRadius, 0, Math.PI * 2);
@@ -167,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(planet1Image, centerX - planetRadius, centerY - planetRadius, planetRadius * 2, planetRadius * 2);
         ctx.restore();
 
-        // Draw planet border
         ctx.beginPath();
         ctx.arc(centerX, centerY, planetRadius, 0, Math.PI * 2);
         ctx.strokeStyle = 'var(--auspex-green-light)';
@@ -188,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const shipX = centerX + shipCircleRadius * Math.cos(angle);
             const shipY = centerY + shipCircleRadius * Math.sin(angle);
 
-            // Draw line from ship to planet
             ctx.beginPath();
             ctx.moveTo(shipX, shipY);
             const dx = centerX - shipX;
@@ -201,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Draw ship image
             const currentShipImage = loadedShipImages[army.id] || loadedShipImages['generic'];
             const drawX = shipX - shipWidth / 2;
             const drawY = shipY - shipHeight / 2;

@@ -8,16 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let auth;
     let userId = null;
     let isAuthReady = false;
+    let hasLoadedArmiesOnce = false; // New flag to prevent re-rendering on every snapshot if not needed
 
     const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } = window.firebase;
     const appId = window.__app_id;
-    // IMPORTANT: window.__firebase_config is now the PARSED object from admin.html
     const firebaseConfig = window.__firebase_config;
     const initialAuthToken = window.__initial_auth_token;
 
     // --- Firebase Initialization and Authentication ---
     try {
-        console.log("Admin: Attempting to initialize Firebase with config:", firebaseConfig); // ADDED LOG
+        console.log("Admin: Attempting to initialize Firebase with config:", firebaseConfig);
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
@@ -35,13 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
             userId = user.uid;
             console.log("Admin: Authenticated with user ID:", userId);
             isAuthReady = true;
-            if (adminLoadingMessage) adminLoadingMessage.textContent = "User authenticated. Seeding data if necessary...";
-            await seedInitialArmiesData();
-            loadAdminArmies();
+            if (adminLoadingMessage) adminLoadingMessage.textContent = "User authenticated. Checking for initial data...";
+            await seedInitialArmiesData(); // Ensure initial data is seeded if necessary
+            loadAdminArmies(); // Start listening for real-time updates
         } else {
             if (adminLoadingMessage) adminLoadingMessage.textContent = "Authenticating...";
             if (initialAuthToken) {
                 try {
+                    console.log("Admin: Attempting sign-in with custom token...");
                     await signInWithCustomToken(auth, initialAuthToken);
                     console.log("Admin: Signed in with custom token.");
                 } catch (error) {
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 try {
+                    console.log("Admin: Attempting anonymous sign-in...");
                     await signInAnonymously(auth);
                     console.log("Admin: Signed in anonymously.");
                 } catch (error) {
@@ -62,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    /**
+     * Seeds initial army data from armies.json to Firestore if the collection is empty.
+     * This ensures the app has data on first run.
+     */
     async function seedInitialArmiesData() {
         if (!userId || !db) {
             console.warn("Admin: Cannot seed data, userId or db not available.");
@@ -69,39 +75,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
         try {
+            console.log("Admin: Checking if armies collection is empty...");
             const existingDocs = await getDocs(armiesCollectionRef);
 
             if (existingDocs.empty) {
-                console.log("Admin: Armies collection is empty. Seeding initial data from armies.json...");
-                if (adminLoadingMessage) adminLoadingMessage.textContent = "Seeding initial army data...";
+                console.log("Admin: Armies collection is empty. Proceeding to seed data from armies.json...");
+                if (adminLoadingMessage) adminLoadingMessage.textContent = "Seeding initial army data from local file...";
                 try {
                     const response = await fetch('data/armies.json');
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(`HTTP error! status: ${response.status} fetching data/armies.json`);
                     }
                     const initialArmies = await response.json();
+                    console.log("Admin: armies.json fetched successfully. Number of armies to seed:", initialArmies.length);
+
+                    if (initialArmies.length === 0) {
+                        console.warn("Admin: armies.json is empty. No data to seed.");
+                        if (adminLoadingMessage) adminLoadingMessage.textContent = "No initial army data found in armies.json.";
+                        return;
+                    }
 
                     for (const army of initialArmies) {
+                        console.log(`Admin: Seeding army: ${army.name}`);
                         await setDoc(doc(armiesCollectionRef, army.id), army);
                     }
                     console.log("Admin: Initial armies data seeded successfully.");
-                    if (adminLoadingMessage) adminLoadingMessage.textContent = "Initial army data seeded. Loading...";
+                    if (adminLoadingMessage) adminLoadingMessage.textContent = "Initial army data seeded. Loading from Firestore...";
                 } catch (error) {
                     console.error("Admin: Error seeding initial armies data from armies.json:", error);
-                    if (adminLoadingMessage) adminLoadingMessage.textContent = `Error seeding data: ${error.message}`;
+                    if (adminLoadingMessage) adminLoadingMessage.textContent = `Error seeding data: ${error.message}. Check console.`;
                     alert(`Error seeding initial data. Check if data/armies.json exists and is valid. Details in console.`);
                 }
             } else {
                 console.log("Admin: Armies collection already contains data. Skipping seeding.");
-                if (adminLoadingMessage) adminLoadingMessage.textContent = "Armies data exists. Loading...";
+                if (adminLoadingMessage) adminLoadingMessage.textContent = "Armies data exists in Firestore. Loading...";
             }
         } catch (error) {
-            console.error("Admin: Error checking existing armies documents:", error);
-            if (adminLoadingMessage) adminLoadingMessage.textContent = `Error accessing database: ${error.message}`;
+            console.error("Admin: Error checking existing armies documents in Firestore:", error);
+            if (adminLoadingMessage) adminLoadingMessage.textContent = `Error accessing database: ${error.message}. Check console for security rules.`;
             alert(`Error accessing Firestore to check for existing data. Check security rules and network. Details in console.`);
         }
     }
 
+    /**
+     * Fetches army data from Firestore using onSnapshot for real-time updates.
+     */
     function loadAdminArmies() {
         if (!userId || !db) {
             console.warn("Admin: Cannot load armies, userId or db not available.");
@@ -111,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
 
+        console.log("Admin: Setting up real-time listener for armies data...");
         onSnapshot(armiesCollectionRef, (snapshot) => {
             currentArmiesData = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -118,21 +137,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
             renderArmyAdminList(currentArmiesData);
             console.log('Admin: Armies data updated from Firestore.', currentArmiesData);
-            if (adminLoadingMessage) adminLoadingMessage.classList.add('hidden');
+            if (adminLoadingMessage && !hasLoadedArmiesOnce) {
+                adminLoadingMessage.classList.add('hidden'); // Hide message once data is successfully loaded
+                hasLoadedArmiesOnce = true;
+            }
         }, (error) => {
-            console.error('Admin: Error listening to armies data:', error);
-            if (adminLoadingMessage) adminLoadingMessage.textContent = `Error loading data: ${error.message}`;
+            console.error('Admin: Error listening to armies data from Firestore:', error);
+            if (adminLoadingMessage) adminLoadingMessage.textContent = `Error loading data: ${error.message}. Check console.`;
             alert('Error loading army data from database. Check console for details (e.g., security rules).');
         });
     }
 
+    /**
+     * Renders the list of armies with editable fields.
+     * @param {Array} armies - The array of army objects.
+     */
     function renderArmyAdminList(armies) {
         if (!armyAdminList) return;
 
-        armyAdminList.innerHTML = '';
+        armyAdminList.innerHTML = ''; // Clear previous content
 
         if (armies.length === 0) {
-            armyAdminList.innerHTML = '<p style="text-align: center; color: white;">No armies found to manage.</p>';
+            armyAdminList.innerHTML = '<p style="text-align: center; color: white;">No armies found to manage. Ensure armies.json is valid or add them manually.</p>';
             return;
         }
 
@@ -195,7 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.loadAdminArmies = () => {
-        if (!isAuthReady) {
+        // This function is called by admin.js after password authentication.
+        // The onAuthStateChanged listener will handle the actual data loading.
+        // We just ensure the message is set correctly for the user.
+        if (!isAuthReady) { // Only update message if auth hasn't completed yet
             if (adminLoadingMessage) adminLoadingMessage.textContent = "Password correct. Initializing data...";
         }
     };
