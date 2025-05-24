@@ -1,0 +1,35 @@
+[
+    {
+      "id": "battle1",
+      "date": "2025-06-01",
+      "event_name": "Skirmish for Outpost 7",
+      "location": "planet1",
+      "armies_involved": ["ultramarines", "orks"],
+      "status": "Scheduled"
+    },
+    {
+      "id": "battle2",
+      "date": "2025-06-03",
+      "event_name": "Siege of Hive Mortis",
+      "location": "planet4",
+      "armies_involved": ["chaos_spacemarines", "tyranids"],
+      "status": "Ongoing"
+    },
+    {
+      "id": "battle3",
+      "date": "2025-06-05",
+      "event_name": "Raid on Xylos",
+      "location": "planet2",
+      "armies_involved": ["ultramarines", "chaos_spacemarines"],
+      "status": "Scheduled"
+    },
+    {
+      "id": "battle4",
+      "date": "2025-06-07",
+      "event_name": "Defense of Aethel",
+      "location": "planet5",
+      "armies_involved": ["eldar", "tyranids"],
+      "status": "Scheduled"
+    }
+  ]
+  

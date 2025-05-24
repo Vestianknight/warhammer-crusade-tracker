@@ -155,7 +155,7 @@ function renderArmyOverview(filterFactionId = 'all') {
 
     let filteredArmies = armiesData;
     if (filterFactionId !== 'all') {
-        filteredArmies = armiesData.filter(army => army.faction === filterFactionId);
+        filteredArmies = armiesData.filter(army => String(army.faction) === String(filterFactionId)); // Robust comparison
     }
 
     if (filteredArmies.length === 0) {
@@ -164,7 +164,8 @@ function renderArmyOverview(filterFactionId = 'all') {
     }
 
     filteredArmies.forEach(army => {
-        const factionName = factionsData.find(f => f.id === army.faction)?.name || 'Unknown Faction';
+        // Corrected line for factionName
+        const factionName = factionsData.find(f => String(f.id) === String(army.faction))?.name || 'Unknown Faction';
         const card = document.createElement('div');
         card.className = 'army-card';
         card.innerHTML = `
@@ -211,7 +212,8 @@ function showArmyDetailPage(armyId) {
         return;
     }
 
-    const factionName = factionsData.find(f => f.id === army.faction)?.name || 'Unknown Faction';
+    // Corrected line for factionName
+    const factionName = factionsData.find(f => String(f.id) === String(army.faction))?.name || 'Unknown Faction';
 
     const armyDetailContent = document.getElementById('army-detail-content');
     armyDetailContent.innerHTML = `
@@ -224,7 +226,7 @@ function showArmyDetailPage(armyId) {
             <div class="detail-item full-width"><strong>Description:</strong> ${army.description || 'N/A'}</div>
             <div class="detail-item full-width"><strong>Notes:</strong> ${army.notes || 'No specific notes.'}</div>
         </div>
-        `;
+    `;
 
     document.getElementById('army-list-overview').classList.add('hidden');
     document.getElementById('army-detail-page-container').classList.remove('hidden');
@@ -252,7 +254,8 @@ function renderPlanets() {
     }
 
     planetsData.forEach(planet => {
-        const controllingFactionName = factionsData.find(f => f.id === planet.controlling_faction)?.name || 'Unclaimed';
+        // Corrected line for controllingFactionName
+        const controllingFactionName = factionsData.find(f => String(f.id) === String(planet.controlling_faction))?.name || 'Unclaimed';
         const card = document.createElement('div');
         card.className = 'planet-card';
         card.innerHTML = `
@@ -263,7 +266,7 @@ function renderPlanets() {
             <div class="planet-description">
                 <p>${planet.description}</p>
             </div>
-            `;
+        `;
         planetsContainer.appendChild(card);
     });
 }

@@ -1,42 +1,42 @@
 [
   {
     "id": "planet1",
-    "name": "Terra Nova",
-    "description": "A newly colonized world, rich in strategic resources. Control of its vast mineral deposits is crucial for the war effort. Currently a brutal four-way conflict.",
+    "name": "Veridian Prime",
     "image": "images/planet1.png",
-    "army_control": [
-      { "army_id": "ultramarines", "percentage": 30, "color": "#4A90E2" },
-      { "army_id": "tyranids", "percentage": 25, "color": "#800080" },
-      { "army_id": "astra-militarum", "percentage": 25, "color": "#A9A9A9" },
-      { "army_id": "death-guard", "percentage": 20, "color": "#D0021B" }
-    ],
-    "fighting_army_id": "ultramarines",
-    "battle_reason": "Ultramarines and Astra Militarum are clashing with Tyranids and Death Guard in a brutal four-way conflict for vital resources."
+    "description": "A vital forge world, rich in strategic resources.",
+    "controlling_faction": "IMPERIUM",
+    "status": "Secure"
   },
   {
     "id": "planet2",
-    "name": "Xylos Prime",
-    "description": "An ancient, ruined Xenos homeworld, rumored to hold powerful relics. Its desolate surface hides forgotten technologies and dangerous entities. A chaotic free-for-all for ancient power.",
+    "name": "Xylos",
     "image": "images/planet2.png",
-    "army_control": [
-      { "army_id": "necrons", "percentage": 30, "color": "#00FFFF" },
-      { "army_id": "adeptus-custodes", "percentage": 25, "color": "#FFD700" },
-      { "army_id": "chaos-space-marines", "percentage": 25, "color": "#8B0000" },
-      { "army_id": "ork-speedwaaagh", "percentage": 20, "color": "#7ED321" }
-    ],
-    "fighting_army_id": "necrons",
-    "battle_reason": "Necrons battle Adeptus Custodes for control of ancient technology, while Chaos Space Marines and Orks fight their own brutal war on the fringes."
+    "description": "A contested agri-world, constantly under siege.",
+    "controlling_faction": "CHAOS",
+    "status": "Contested"
   },
   {
     "id": "planet3",
-    "name": "Veridian Reach",
-    "description": "A verdant agri-world, vital for sustaining the local population. Its fertile lands are a prime target for any invading force seeking to starve out resistance. A strategic skirmish for control of food supplies.",
+    "name": "Gork's Grin",
     "image": "images/planet3.png",
-    "army_control": [
-      { "army_id": "tau-empire", "percentage": 70, "color": "#FF4500" },
-      { "army_id": "craftworld-iyanden", "percentage": 30, "color": "#F5A623" }
-    ],
-    "fighting_army_id": "tau-empire",
-    "battle_reason": "T'au forces are engaging Craftworld Iyanden in a strategic skirmish for control of the agri-world's vital food production."
+    "description": "A feral world overrun by savage Ork tribes.",
+    "controlling_faction": "XENOS_ORKS",
+    "status": "Under Xenos Control"
+  },
+  {
+    "id": "planet4",
+    "name": "Hive World Mortis",
+    "image": "images/planet4.png",
+    "description": "A densely populated hive world, currently under Tyranid assault.",
+    "controlling_faction": "XENOS_TYRANIDS",
+    "status": "Under Siege"
+  },
+  {
+    "id": "planet5",
+    "name": "Aethel",
+    "image": "images/planet5.png",
+    "description": "An ancient Aeldari maiden world, shrouded in psychic wards.",
+    "controlling_faction": "XENOS_AELDARI",
+    "status": "Protected"
   }
 ]

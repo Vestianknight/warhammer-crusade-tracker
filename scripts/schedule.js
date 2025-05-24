@@ -77,64 +77,78 @@ async function fetchAllScheduleData() {
 
 // --- Rendering Functions ---
 
+let auspexInterval; // To store the interval ID for clearing later
+
 function renderSectorAuspex() {
     const canvas = document.getElementById('sector-auspex-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 400; // Set a fixed width
     canvas.height = 400; // Set a fixed height
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw background (optional)
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Auspex scan lines
-    ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)'; // Green lines
-    ctx.lineWidth = 1;
-
-    // Draw concentric circles
-    for (let i = 1; i <= 4; i++) {
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, i * 40, 0, Math.PI * 2);
-        ctx.stroke();
+    // Clear any previous animation interval
+    if (auspexInterval) {
+        clearInterval(auspexInterval);
     }
 
-    // Draw horizontal and vertical lines
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.moveTo(0, canvas.height / 2);
-    ctx.lineTo(canvas.width, canvas.height / 2);
-    ctx.stroke();
+    // Helper to redraw static auspex elements
+    function renderSectorAuspexBase() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear to draw background
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw planets
-    planetsData.forEach(planet => {
-        // Simple random positioning for now, replace with actual coordinates if you add them to JSON
-        const x = canvas.width / 2 + (Math.random() - 0.5) * (canvas.width - 100);
-        const y = canvas.height / 2 + (Math.random() - 0.5) * (canvas.height - 100);
-
-        ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
-        const controllingFaction = factionsData.find(f => f.id === planet.controlling_faction);
-        ctx.fillStyle = controllingFaction ? controllingFaction.color : 'gray'; // Use faction color
-        ctx.fill();
-        ctx.strokeStyle = 'white';
+        // Auspex scan lines
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)'; // Green lines
         ctx.lineWidth = 1;
+
+        // Draw concentric circles
+        for (let i = 1; i <= 4; i++) {
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, i * 40, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Draw horizontal and vertical lines
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
         ctx.stroke();
 
-        // Optional: add text for planet name
-        ctx.fillStyle = 'white';
-        ctx.font = '10px Inter';
-        ctx.fillText(planet.name, x + 8, y + 4);
-    });
+        // Draw planets
+        planetsData.forEach(planet => {
+            // Use actual planet positions if they exist in your JSON, otherwise this remains random
+            // For now, let's make positions consistent once chosen
+            const seed = (planet.id.charCodeAt(0) + planet.id.charCodeAt(1)) / 2; // Simple pseudo-random from ID
+            const x = canvas.width / 2 + (Math.sin(seed * 100) * 0.4 + (seed % 0.5)) * (canvas.width / 2 - 50);
+            const y = canvas.height / 2 + (Math.cos(seed * 100) * 0.4 + (seed % 0.5)) * (canvas.height / 2 - 50);
+
+
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            const controllingFaction = factionsData.find(f => String(f.id) === String(planet.controlling_faction)); // Robust comparison
+            ctx.fillStyle = controllingFaction ? controllingFaction.color : 'gray'; // Use faction color
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Add text for planet name
+            ctx.fillStyle = 'white';
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(planet.name, x + 8, y);
+        });
+    }
+
+    // Draw the initial static elements
+    renderSectorAuspexBase();
 
     // Draw a rotating radar sweep (simple animation)
     let angle = 0;
-    setInterval(() => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        renderSectorAuspexBase(); // Redraw static elements
+    auspexInterval = setInterval(() => {
+        renderSectorAuspexBase(); // Redraw static elements with planets
 
         ctx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
         ctx.lineWidth = 2;
@@ -147,41 +161,6 @@ function renderSectorAuspex() {
         ctx.stroke();
         angle += 0.05; // Adjust speed
     }, 50);
-
-    // Helper to redraw static auspex elements
-    function renderSectorAuspexBase() {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
-        ctx.lineWidth = 1;
-        for (let i = 1; i <= 4; i++) {
-            ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, i * 40, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2, 0);
-        ctx.lineTo(canvas.width / 2, canvas.height);
-        ctx.moveTo(0, canvas.height / 2);
-        ctx.lineTo(canvas.width, canvas.height / 2);
-        ctx.stroke();
-
-        planetsData.forEach(planet => {
-            const x = canvas.width / 2 + (Math.random() - 0.5) * (canvas.width - 100); // Same random position for consistency
-            const y = canvas.height / 2 + (Math.random() - 0.5) * (canvas.height - 100);
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            const controllingFaction = factionsData.find(f => f.id === planet.controlling_faction);
-            ctx.fillStyle = controllingFaction ? controllingFaction.color : 'gray';
-            ctx.fill();
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            ctx.fillStyle = 'white';
-            ctx.font = '10px Inter';
-            ctx.fillText(planet.name, x + 8, y + 4);
-        });
-    }
 }
 
 
@@ -213,7 +192,7 @@ function renderWeeklyBattlesSchedule(filterArmyId = 'all') {
     let filteredSchedule = scheduleData;
     if (filterArmyId !== 'all') {
         filteredSchedule = scheduleData.filter(battle =>
-            battle.armies_involved.includes(filterArmyId)
+            battle.armies_involved.includes(String(filterArmyId)) // Robust comparison
         );
     }
 
@@ -242,11 +221,11 @@ function renderWeeklyBattlesSchedule(filterArmyId = 'all') {
     filteredSchedule.forEach(battle => {
         const row = document.createElement('tr');
         const armiesNames = battle.armies_involved.map(armyId => {
-            const army = armiesData.find(a => a.id === armyId);
-            return army ? army.name : `[${armyId}]`;
+            const army = armiesData.find(a => String(a.id) === String(armyId)); // Robust comparison
+            return army ? army.name : `[Unknown Army: ${armyId}]`;
         }).join(', ');
 
-        const locationName = planetsData.find(p => p.id === battle.location)?.name || battle.location;
+        const locationName = planetsData.find(p => String(p.id) === String(battle.location))?.name || battle.location; // Robust comparison
 
         row.innerHTML = `
             <td>${battle.date}</td>

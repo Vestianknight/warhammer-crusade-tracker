@@ -46,7 +46,8 @@ function renderAdminArmyCards() {
     }
 
     armiesData.forEach(army => {
-        const factionName = factionsData.find(f => f.id === army.faction)?.name || 'Unknown Faction';
+        // Corrected line for factionName
+        const factionName = factionsData.find(f => String(f.id) === String(army.faction))?.name || 'Unknown Faction';
         const card = document.createElement('div');
         card.className = 'army-admin-card';
         card.dataset.armyId = army.id; // Store army ID on the card for easy lookup
@@ -54,12 +55,12 @@ function renderAdminArmyCards() {
         card.innerHTML = `
             <h3>${army.name}</h3>
             <p><strong>Player:</strong> ${army.player}</p>
-            <p><strong>Faction:</strong> <span class="math-inline">\{factionName\}</p\>
-<label\>CP\: <input type\="number" data\-field\="crusade\_points" value\="</span>{army.crusade_points}"></label>
-            <label>Battles: <input type="number" data-field="battles_played" value="<span class="math-inline">\{army\.battles\_played\}"\></label\>
-<label\>Victories\: <input type\="number" data\-field\="victories" value\="</span>{army.victories}"></label>
-            <label>Notes: <textarea data-field="notes"><span class="math-inline">\{army\.notes \|\| ''\}</textarea\></label\>
-<label\>Description\: <textarea data\-field\="description"\></span>{army.description || ''}</textarea></label>
+            <p><strong>Faction:</strong> ${factionName}</p>
+            <label>CP: <input type="number" data-field="crusade_points" value="${army.crusade_points}"></label>
+            <label>Battles: <input type="number" data-field="battles_played" value="${army.battles_played}"></label>
+            <label>Victories: <input type="number" data-field="victories" value="${army.victories}"></label>
+            <label>Notes: <textarea data-field="notes">${army.notes || ''}</textarea></label>
+            <label>Description: <textarea data-field="description">${army.description || ''}</textarea></label>
             <button class="button save-changes-btn" data-army-id="${army.id}">Apply Changes (Local Only)</button>
         `;
         armyListContainer.appendChild(card);
@@ -98,3 +99,22 @@ function handleApplyChangesClick(event) {
     });
 
     // No actual database save here.
+    console.log(`Admin: Applied changes for army ID: ${armyId}. These changes are local and temporary.`);
+    alert(`Changes for ${currentArmy.name} applied locally. NOT saved permanently.`);
+}
+
+
+// --- Initial Load ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // Hide the initial loading message for admin
+    document.getElementById('admin-loading-message').style.display = 'none';
+
+    // Load all data
+    await Promise.all([
+        fetchArmiesDataForAdmin(),
+        fetchFactionsDataForAdmin()
+    ]);
+
+    // Render the cards after data is loaded
+    renderAdminArmyCards();
+});

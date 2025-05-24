@@ -1,112 +1,57 @@
 [
   {
     "id": "ultramarines",
-    "name": "Ultramarines (John Doe)",
-    "faction": "Imperium",
-    "player": "John Doe",
-    "description": "A disciplined chapter of Space Marines, adhering strictly to the Codex Astartes. Known for their tactical prowess and unwavering loyalty to the Emperor. This force focuses on balanced combined arms operations, employing heavy infantry and reliable armored support.",
-    "crusade_points": 100,
+    "name": "Ultramarines",
+    "player": "Roboute",
+    "faction": "IMPERIUM",
+    "description": "The quintessential Space Marines, defenders of Ultramar.",
+    "crusade_points": 50,
     "battles_played": 5,
     "victories": 3,
-    "notes": "Currently focused on securing vital supply lines on Terra Nova."
+    "notes": "Loyal to the Emperor. Known for tactical precision."
   },
   {
-    "id": "ork-speedwaaagh",
-    "name": "Ork Speedwaaagh! (Jane Smith)",
-    "faction": "Xenos",
-    "player": "Jane Smith",
-    "description": "A raucous and fast-moving Ork horde, obsessed with speed and vehicular combat. Their forces are comprised of numerous Trukks, Buggies, and Deffkoptas, designed to close with the enemy quickly and unleash a torrent of dakka. WAAAGH! energy is high!",
-    "crusade_points": 95,
-    "battles_played": 6,
-    "victories": 4,
-    "notes": "Recently acquired new 'shoota' vehicles, looking for a good fight."
-  },
-  {
-    "id": "death-guard",
-    "name": "Death Guard (Mike Johnson)",
-    "faction": "Chaos",
-    "player": "Mike Johnson",
-    "description": "The inexorable legions of Nurgle, spreading plague and despair across the galaxy. This army is slow but incredibly resilient, shrugging off damage that would fell lesser warriors. Their advance is a tide of corruption, bringing disease and despair to all who stand against them.",
-    "crusade_points": 110,
-    "battles_played": 5,
-    "victories": 3,
-    "notes": "Consolidating gains on Xylos Prime, preparing for a major offensive."
-  },
-  {
-    "id": "craftworld-iyanden",
-    "name": "Craftworld Iyanden (Sarah Lee)",
-    "faction": "Aeldari",
-    "player": "Sarah Lee",
-    "description": "The spectral hosts of Craftworld Iyanden, composed primarily of Wraith constructs animated by the souls of their fallen ancestors. They strike with precision and grace, but their numbers are few. Their goal is to protect the remaining Aeldari from the encroaching darkness.",
-    "crusade_points": 85,
+    "id": "orks",
+    "name": "Goffs",
+    "player": "Ghazghkull",
+    "faction": "XENOS_ORKS",
+    "description": "Brutal and cunning Orks, always looking for a good WAAAGH!",
+    "crusade_points": 45,
     "battles_played": 4,
     "victories": 2,
-    "notes": "Seeking ancient artifacts on the fringe of the campaign zone."
+    "notes": "More choppa, less dakka."
   },
   {
-    "id": "adeptus-custodes",
-    "name": "Adeptus Custodes (Chris Evans)",
-    "faction": "Imperium",
-    "player": "Chris Evans",
-    "description": "The Ten Thousand, the Emperor's personal guard, clad in auramite and wielding the finest weaponry. Each Custodian is a demigod of war, a living work of art and destruction. They are few in number but unmatched in skill and might.",
-    "crusade_points": 120,
-    "battles_played": 3,
-    "victories": 3,
-    "notes": "Deployed to secure a vital Imperial relic, their presence alone inspires awe."
+    "id": "chaos_spacemarines",
+    "name": "Black Legion",
+    "player": "Abaddon",
+    "faction": "CHAOS",
+    "description": "Heretic Astartes, sworn enemies of the Imperium.",
+    "crusade_points": 60,
+    "battles_played": 6,
+    "victories": 4,
+    "notes": "Chaos Undivided. Seek to plunge the galaxy into anarchy."
   },
   {
     "id": "tyranids",
-    "name": "Tyranid Swarm (Emily White)",
-    "faction": "Xenos",
-    "player": "Emily White",
-    "description": "The Great Devourer, an endless tide of bio-engineered horrors from beyond the galaxy. The Tyranid swarm consumes all in its path, adapting and evolving with terrifying speed. Their goal is simple: biomass.",
-    "crusade_points": 105,
+    "name": "Hive Fleet Leviathan",
+    "player": "The Swarmlord",
+    "faction": "XENOS_TYRANIDS",
+    "description": "Voracious xenos bio-forms, consuming all in their path.",
+    "crusade_points": 55,
     "battles_played": 5,
     "victories": 3,
-    "notes": "A vanguard fleet has been detected, consuming outer system worlds rapidly."
+    "notes": "Driven by the insatiable hunger of the Hive Mind."
   },
   {
-    "id": "astra-militarum",
-    "name": "Astra Militarum (Alex Turner)",
-    "faction": "Imperium",
-    "player": "Alex Turner",
-    "description": "The backbone of the Imperium's military might, countless regiments of brave human soldiers. Though individually mortal, their sheer numbers and unwavering faith make them a formidable force, supported by tanks and artillery.",
-    "crusade_points": 90,
-    "battles_played": 7,
-    "victories": 4,
-    "notes": "Holding the line against encroaching xenos forces on the western front."
-  },
-  {
-    "id": "chaos-space-marines",
-    "name": "Chaos Space Marines (Ben Carter)",
-    "faction": "Chaos",
-    "player": "Ben Carter",
-    "description": "Heretic Astartes, traitors who turned from the Emperor's light to serve the Ruinous Powers. Driven by dark pacts and ancient hatreds, they unleash unholy war on the galaxy, seeking to burn it all down.",
-    "crusade_points": 115,
-    "battles_played": 6,
-    "victories": 4,
-    "notes": "Performing dark rituals to summon daemonic allies for the next assault."
-  },
-  {
-    "id": "necrons",
-    "name": "Necron Dynasty (Chloe Davis)",
-    "faction": "Xenos",
-    "player": "Chloe Davis",
-    "description": "Ancient robotic beings, awakened from millennia of slumber to reclaim their galactic empire. Their armies are unfeeling machines, relentless and nigh-indestructible, wielding gauss weaponry that strips matter at a molecular level.",
-    "crusade_points": 108,
+    "id": "eldar",
+    "name": "Ulthwé",
+    "player": "Eldrad",
+    "faction": "XENOS_AELDARI",
+    "description": "Ancient and enigmatic xenos, manipulating fate.",
+    "crusade_points": 48,
     "battles_played": 4,
-    "victories": 3,
-    "notes": "Tomb worlds are stirring, and strange energy readings emanate from deep space."
-  },
-  {
-    "id": "tau-empire",
-    "name": "T'au Empire (David Miller)",
-    "faction": "Xenos",
-    "player": "David Miller",
-    "description": "A young, technologically advanced xenos empire united under the philosophy of the 'Greater Good'. They seek to expand their dominion through diplomacy or overwhelming firepower, utilizing advanced battlesuits and pulse weaponry.",
-    "crusade_points": 98,
-    "battles_played": 5,
-    "victories": 3,
-    "notes": "Establishing new forward operating bases, seeking to integrate new species."
+    "victories": 2,
+    "notes": "Masters of psychic warfare and swift strikes."
   }
 ]
