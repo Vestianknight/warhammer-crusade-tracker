@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let planetsData = [];
 
     // --- DOM Elements for Sections (only relevant for index.html) ---
-    const passwordOverlay = document.getElementById('password-overlay');
     const mainContent = document.getElementById('main-content');
     const factionProgressSection = document.getElementById('faction-progress-section');
     const armyRosterSection = document.getElementById('army-roster-section');
@@ -33,9 +32,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialAuthToken = window.__initial_auth_token;
 
     // --- Firebase Initialization and Authentication ---
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
+    try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        console.log("Main: Firebase app initialized.");
+    } catch (error) {
+        console.error("Main: Error initializing Firebase app:", error);
+        // Do not use alert here to avoid blocking public page
+        console.error("Firebase initialization failed. Check console for details.");
+        if (mainContent) {
+            mainContent.innerHTML = `<p style="color: white; text-align: center;">
+                                        Error initializing Firebase. Please check console for details.
+                                    </p>`;
+        }
+        return; // Stop execution if Firebase init fails
+    }
+
 
     // Listen for auth state changes
     onAuthStateChanged(auth, async (user) => {
@@ -53,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Main: Signed in with custom token.");
                 } catch (error) {
                     console.error("Main: Error signing in with custom token:", error);
-                    alert("Authentication failed. Please try again.");
+                    console.error("Authentication failed. Check console for details.");
                 }
             } else {
                 try {
@@ -61,24 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Main: Signed in anonymously.");
                 } catch (error) {
                     console.error("Main: Error signing in anonymously:", error);
-                    alert("Anonymous authentication failed. Please try again.");
+                    console.error("Anonymous authentication failed. Check console for details.");
                 }
             }
         }
     });
 
 
-    // --- Password Protection (TEMPORARILY BYPASSED FOR DEVELOPMENT) ---
-    // This logic only applies to index.html's password overlay
-    // For now, it bypasses the password, directly showing content for development.
-    // The admin.html page has its own separate password logic.
-    if (passwordOverlay && mainContent) {
-        passwordOverlay.classList.add('hidden');
-        mainContent.style.display = 'block';
-    }
-
-
-    // --- Helper for generating consistent colors for armies (REVERTED TO ORIGINAL DISTINCT COLORS) ---
+    // --- Helper for generating consistent colors for armies ---
     const colors = [
         '#FF6384', // Red
         '#36A2EB', // Blue
@@ -130,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Auto-Refresh Logic ---
-    let currentAppVersion = '1.0.0';
+    let currentAppVersion = null; // Initialized to null, will be set from version.json
     const VERSION_CHECK_INTERVAL = 5000;
 
     async function checkAppVersion() {
@@ -139,10 +142,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             const latestVersion = data.version;
 
-            if (latestVersion !== currentAppVersion) {
+            // Only trigger reload if currentAppVersion has been set AND is different
+            if (currentAppVersion !== null && latestVersion !== currentAppVersion) {
                 console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
-                alert("A new version of the Crusade Tracker is available! The page will now refresh.");
-                window.location.reload(true);
+                setTimeout(() => {
+                    alert("A new version of the Crusade Tracker is available! The page will now refresh.");
+                    window.location.reload(true);
+                }, 100);
+            } else if (currentAppVersion === null) {
+                // First time setting the version
+                currentAppVersion = latestVersion;
+                console.log(`Initial app version set to: ${currentAppVersion}`);
             }
         } catch (error) {
             console.error('Error checking app version:', error);
@@ -155,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isAuthReady) {
             console.log("Main: Authentication not ready, retrying initializeCrusadeTracker...");
-            return; // Wait for auth to be ready
+            return;
         }
 
         try {
@@ -168,7 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             factionsData = await factionsRes.json();
             planetsData = await planetsRes.json();
+            // Set currentAppVersion from fetched version.json on initial load
             currentAppVersion = (await versionRes.json()).version;
+            console.log(`Main: Initial version loaded from file: ${currentAppVersion}`);
+
 
             // Now, set up real-time listener for armies from Firestore
             const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
@@ -182,13 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Re-render components that depend on armiesData
                 populateFactionFilter(factionsData);
                 renderFactionChart(factionsData, armiesData);
-                renderPlanets(planetsData); // Planets render depends on armiesData for control info
-                router(); // Re-run router to ensure correct view with updated data
+                renderPlanets(planetsData);
+                router();
             }, (error) => {
                 console.error('Main: Error listening to armies data from Firestore:', error);
                 if (mainContent) {
                     mainContent.innerHTML = `<p style="color: white; text-align: center;">
-                                                Failed to load army data from database.
+                                                Failed to load army data from database. Check console for details.
                                             </p>`;
                 }
             });
@@ -224,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Faction Filter Logic ---
     function populateFactionFilter(factions) {
+        if (!factionFilterDropdown) return;
         factionFilterDropdown.innerHTML = '<option value="all">All Factions</option>';
         factions.forEach(faction => {
             const option = document.createElement('option');
