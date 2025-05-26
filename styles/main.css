@@ -10,11 +10,11 @@ body {
     color: #e0e0e0; /* Light text for general content */
     line-height: 1.6;
     overflow-x: hidden; /* Prevent horizontal scrolling */
+    /* Removed subtle space background from body */
 }
 
-/* Adjusted main-content to not be hidden by default for navigation */
 .main-content {
-    /* Originally display: none; but now controlled by JS for password overlays */
+    display: none; /* Hidden by default, shown after password */
     max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
@@ -107,109 +107,38 @@ body {
     margin: 0 auto;
 }
 
-/* Grid Layout for General Use (e.g., Army Overview Cards) */
+/* Grid Layout for Armies */
 .grid-container {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
 }
 
-/* Army List Overview Card (used for all armies in the main roster) */
-.army-list-overview .army-card {
+/* Army List Card */
+.army-card {
     background-color: #3e3e60;
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
     transition: transform 0.2s ease;
-    cursor: pointer; /* Indicate clickable */
 }
 
-.army-list-overview .army-card:hover {
+.army-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(233, 69, 96, 0.2); /* Subtle glow on hover */
 }
 
-.army-list-overview .army-card h3 {
+.army-card h3 {
     color: #e94560;
     font-size: 1.4rem;
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
 
-.army-list-overview .army-card p {
+.army-card p {
     font-size: 0.9rem;
     color: #c0c0c0;
-    margin-bottom: 0.5rem;
 }
-
-.army-list-overview .army-card .view-button {
-    background-color: #0f3460;
-    color: #e0e0e0;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-    margin-top: 1rem;
-}
-
-.army-list-overview .army-card .view-button:hover {
-    background-color: #164a80;
-}
-
-/* Army Card Header - Simplified without ship image */
-.army-card-header {
-    display: block; /* Revert to block display */
-    margin-bottom: 1rem;
-}
-
-.army-card-header h3 {
-    margin: 0; /* Reset margin for h3 */
-}
-
-/* Army Detail Page Container */
-.army-detail-page-container {
-    background-color: #3e3e60;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    margin: 2rem auto; /* Centered horizontally */
-    text-align: center; /* Default for content inside */
-    display: flex; /* Use flexbox for internal layout */
-    flex-direction: column; /* Stack elements vertically by default */
-    align-items: center; /* Center items horizontally within the container */
-    max-width: 800px; /* Increased max-width for better text fitting */
-}
-
-.army-detail-page-container #army-detail-content {
-    display: flex;
-    flex-direction: column; /* Always column for content within detail page */
-    align-items: center; /* Center items horizontally within this content div */
-    gap: 0.8rem; /* Reduced gap for tighter text */
-    width: 100%; /* Ensure it takes full available width */
-    text-align: center; /* Default text alignment for mobile */
-}
-
-.army-detail-page-container #army-detail-content h3 {
-    font-size: 2.2rem;
-    color: #e94560;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-}
-
-.army-detail-page-container #army-detail-content p {
-    font-size: 1.1rem;
-    color: #e0e0e0;
-    margin-bottom: 0.5rem;
-    max-width: 90%; /* Constrain text width slightly */
-}
-
-.army-detail-page-container #army-detail-content p strong {
-    color: #e0e0e0;
-}
-
 
 /* Planetary Control Container */
 .planets-container {
@@ -240,16 +169,16 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
-    position: relative;
-    overflow: hidden;
+    position: relative; /* For positioning ship and overlay */
+    overflow: hidden; /* Ensure percentage overlay doesn't spill */
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    align-items: center; /* Center items horizontally */
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     cursor: pointer; /* Indicate clickable */
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, filter 0.5s ease-in-out, background-color 0.5s ease, box-shadow 0.5s ease; /* Smooth transition for layout changes */
     width: 200px; /* Fixed width for initial view */
-    height: auto; /* Allow height to adjust based on content */
+    height: 250px; /* Fixed height for initial view */
     flex-shrink: 0; /* Prevent shrinking in flex container */
     margin: 0; /* Remove default margin */
 }
@@ -261,34 +190,35 @@ body {
 
 /* Styles for when a planet is clicked (single view) */
 .planets-container.single-view .planet-card {
-    position: absolute;
+    position: absolute; /* Allow precise positioning for active card */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 700px;
-    height: auto;
+    width: 90%; /* Take up more space */
+    max-width: 700px; /* Max width for detail view */
+    height: auto; /* Adjust height to content */
+    flex-direction: row; /* Layout content horizontally */
+    align-items: flex-start;
     padding: 2rem;
-    background-color: #2a2a4a;
-    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5);
-    z-index: 10;
+    background-color: #2a2a4a; /* Darker background for active card (not transparent) */
+    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5); /* Stronger glow */
+    z-index: 10; /* Bring active card to front */
 }
 
 .planets-container.single-view .planet-card.inactive {
-    opacity: 0;
-    transform: scale(0.5);
-    pointer-events: none;
-    visibility: hidden;
+    opacity: 0; /* Fade out completely */
+    transform: scale(0.5); /* Shrink significantly */
+    pointer-events: none; /* Make inactive planets unclickable */
+    visibility: hidden; /* Hide completely from screen readers */
 }
 
 .planets-container.single-view .planet-card.active {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1); /* Reset scale if it was scaled on hover */
+    pointer-events: auto; /* Ensure active planet is clickable */
     visibility: visible;
 }
 
-/* Planet image container */
 .planet-image-container {
     position: relative;
     width: 150px; /* Fixed size for planet image container */
@@ -298,7 +228,7 @@ body {
     margin-bottom: 1rem;
     border: 3px solid #0f3460;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent image container from shrinking in flex */
 }
 
 .planets-container.single-view .planet-image-container {
@@ -328,7 +258,7 @@ body {
 
 
 /* Planet Info - Always visible (name & short description) */
-.planet-info-short {
+.planet-info-short { /* Renamed for clarity */
     color: #e0e0e0; /* White text */
     text-align: center;
     padding: 0.5rem;
@@ -376,10 +306,6 @@ body {
     margin: 0 0 0.5rem 0; /* Adjust margin for text */
 }
 
-.planet-detail-content-in-card p strong {
-    color: #e0e0e0;
-}
-
 .planet-detail-content-in-card .control-info {
     font-size: 1.1rem;
     margin-top: 1rem;
@@ -420,6 +346,25 @@ body {
     color: #e0e0e0; /* White text */
 }
 
+
+/* Ship Image */
+.ship-image {
+    width: 60px; /* Size of the ship */
+    height: auto;
+    position: absolute;
+    top: 10px; /* Initial position, will be moved by JS */
+    right: 10px;
+    z-index: 10; /* Ensure ship is on top */
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; /* Smooth movement */
+}
+
+/* Hide ships on inactive planets */
+.planets-container.single-view .planet-card.inactive .ship-image {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
 /* Back button for single view */
 .back-button-overlay {
     position: absolute;
@@ -434,13 +379,13 @@ body {
 }
 
 
-/* Army Overview Dropdown (now part of the main army roster section) */
-.army-filter-controls {
+/* Army Overview Dropdown */
+.army-overview-controls {
     text-align: center;
     margin-bottom: 1.5rem;
 }
 
-.army-filter-controls label {
+.army-overview-controls label {
     font-size: 1.1rem;
     margin-right: 0.5rem;
     color: #e94560;
@@ -459,9 +404,9 @@ body {
     margin-top: 0.5rem; /* Space from label on mobile */
 }
 
-/* Selected Army Details Card (now part of the army detail page) */
-.army-details-card { /* This class is now used for the detail content within the army detail page */
-    background-color: #3e3e60; /* This will be overridden by .army-detail-page-container */
+/* Selected Army Details Card */
+.army-details-card {
+    background-color: #3e3e60;
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -557,231 +502,11 @@ body {
 
 .password-warning {
     font-size: 0.8rem;
-    color: #e94560; /* Made this red for clarity */
+    color: #888;
     margin-top: 1.5rem;
 }
 
-
-/* --- New Navigation Bar Styles --- */
-.main-nav {
-    background-color: #0f3460; /* Darker blue, strong accent */
-    padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-    position: sticky; /* Makes navigation stick to the top */
-    top: 0;
-    width: 100%;
-    z-index: 100; /* Ensure it stays on top of other content */
-    border-bottom: 2px solid #e94560; /* Accent line */
-}
-
-.nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1rem;
-}
-
-.nav-brand {
-    color: #e0e0e0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.nav-brand:hover {
-    color: #e94560; /* Accent on hover */
-}
-
-.nav-links {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 1.5rem; /* Space between nav items */
-}
-
-.nav-links li a {
-    color: #b0b0b0; /* Lighter grey for links */
-    text-decoration: none;
-    font-size: 1.1rem;
-    transition: color 0.3s ease, transform 0.2s ease;
-    position: relative;
-    padding-bottom: 5px; /* Space for underline effect */
-}
-
-.nav-links li a:hover {
-    color: #e0e0e0; /* White on hover */
-    transform: translateY(-2px);
-}
-
-/* Underline effect on hover */
-.nav-links li a::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    background-color: #e94560; /* Accent color for underline */
-    left: 50%;
-    bottom: 0;
-    transform: translateX(-50%);
-    transition: width 0.3s ease;
-}
-
-.nav-links li a:hover::after {
-    width: 100%;
-}
-
-/* Active link styling (you might need JS to add 'active' class based on current page) */
-.nav-links li a.active {
-    color: #e94560; /* Highlight active page */
-    font-weight: 700;
-}
-
-.nav-links li a.active::after {
-    width: 100%;
-}
-
-
-/* --- New Admin Page Specific Styles --- */
-.admin-input {
-    width: calc(100% - 2rem); /* Full width minus padding */
-    max-width: 300px; /* Max width for larger screens */
-    padding: 0.8rem;
-    margin: 0.5rem auto; /* Center input and add vertical space */
-    border: 1px solid #0f3460;
-    border-radius: 5px;
-    background-color: #1a1a2e;
-    color: #e0e0e0;
-    font-size: 1rem;
-    display: block; /* Make it a block element to center with margin: auto */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
-}
-
-/* Specific styling for the army edit form container to look like a card */
-#army-edit-form {
-    background-color: #3e3e60; /* Similar to army cards */
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    margin-top: 2rem;
-    text-align: center; /* Center content within the form */
-}
-
-#army-edit-form h3 {
-    color: #e94560;
-    font-size: 1.8rem;
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-}
-
-#army-edit-form label {
-    display: block; /* Make labels block for better stacking */
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-    color: #e0e0e0;
-}
-
-#army-edit-form p {
-    margin-bottom: 1rem; /* Space between input rows */
-}
-
-#army-edit-form p strong {
-    color: #e94560; /* Highlight army name */
-}
-
-/* Ensure controls within sections are centered */
-.section .controls {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-/* Adjust dropdown width for admin page */
-.section .controls .dropdown {
-    margin: 0.5rem auto; /* Center the dropdown */
-    width: calc(100% - 2rem); /* Full width minus padding */
-    max-width: 400px; /* Slightly wider max-width for dropdown */
-    display: block;
-}
-
 /* Responsive Adjustments */
-@media (max-width: 767px) {
-    .main-nav {
-        padding: 0.8rem 0; /* Slightly less padding for mobile nav */
-    }
-
-    .nav-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.8rem; /* Reduced gap */
-    }
-
-    .nav-brand {
-        margin-bottom: 0.2rem;
-        font-size: 1.3rem; /* Smaller brand text */
-    }
-
-    .nav-links {
-        flex-direction: row; /* Keep horizontal on mobile if few links, or change to column if many */
-        flex-wrap: wrap; /* Allow wrapping */
-        justify-content: center;
-        gap: 0.8rem; /* Smaller gap for mobile nav links */
-        width: 100%;
-        font-size: 0.95rem; /* Slightly smaller font */
-    }
-
-    .nav-links li a {
-        padding: 0.3rem 0.5rem; /* Smaller padding for link hit area */
-    }
-
-
-    /* Chart Legend Fix */
-    .chart-container {
-        height: 350px; /* Give a bit more height for legend */
-    }
-
-    /* Planet Detail Text Alignment Fix (Mobile Specific) */
-    .planets-container.single-view .planet-card {
-        flex-direction: column; /* Stack image and text vertically */
-        align-items: center; /* Center items horizontally */
-        text-align: center; /* Center text within the card */
-        padding: 1rem; /* Reduce padding for mobile */
-        width: 95%; /* Take up more width */
-    }
-
-    .planets-container.single-view .planet-image-container {
-        width: 150px; /* Smaller image in detail view on mobile */
-        height: 150px;
-        margin: 0 auto 1rem auto; /* Center and add bottom margin */
-    }
-
-    .planet-detail-content-in-card {
-        width: 100%; /* Ensure content takes full width */
-        align-items: center; /* Center content within */
-        text-align: center; /* Center text within content */
-    }
-
-    /* Override specific text alignment for detailed info to center on mobile */
-    .planet-detail-content-in-card h3,
-    .planet-detail-content-in-card p,
-    .planet-detail-content-in-card .control-info,
-    .planet-detail-content-in-card .battle-info {
-        text-align: center; /* Center all text elements in detail view on mobile */
-    }
-
-    .planet-detail-content-in-card .control-info p {
-        text-align: center; /* Ensure individual percentage lines are centered */
-    }
-
-    /* Army Detail Page Text Alignment Fix (Mobile Specific) */
-    .army-detail-page-container #army-detail-content h3,
-    .army-detail-page-container #army-detail-content p {
-        text-align: center; /* Ensure all text is centered on mobile */
-    }
-}
-
 @media (min-width: 768px) {
     .header h1 {
         font-size: 3.5rem;
@@ -806,69 +531,37 @@ body {
     /* Planet card in initial grid view on larger screens */
     .planet-card {
         width: 250px; /* Slightly larger for desktop grid */
-        height: auto; /* Ensure height is dynamic */
+        height: 280px;
     }
 
     /* Active planet card in single view on larger screens */
     .planets-container.single-view .planet-card {
         max-width: 900px; /* Wider for desktop detail view */
         padding: 3rem;
-        flex-direction: row; /* Horizontal layout for desktop */
-        align-items: flex-start; /* Align items to the start */
     }
 
     .planets-container.single-view .planet-image-container {
         width: 250px; /* Larger image in detail view */
         height: 250px;
-        margin-right: 2rem; /* Space between image and text in detail view */
-        margin-bottom: 0; /* Remove bottom margin in detail view */
     }
 
-    .planet-detail-content-in-card h3,
-    .planet-detail-content-in-card p,
-    .planet-detail-content-in-card .control-info,
-    .planet-detail-content-in-card .battle-info {
-        text-align: left; /* Ensure text is left-aligned on desktop */
+    .planet-detail-content-in-card h3 {
+        font-size: 2.5rem;
     }
 
-    .planet-detail-content-in-card .control-info p {
-        text-align: left; /* Ensure individual percentage lines are left-aligned */
+    .planet-detail-content-in-card p {
+        font-size: 1.2rem;
     }
 
-    /* Army Detail Page Text Alignment Fix (Desktop Specific) */
-    .army-detail-page-container #army-detail-content {
-        flex-direction: column; /* Keep as column for content within */
-        align-items: flex-start; /* Align content to the left within its div */
-        text-align: left; /* Ensure text is left-aligned on desktop */
-    }
-    .army-detail-page-container #army-detail-content h3,
-    .army-detail-page-container #army-detail-page-container #army-detail-content p {
-        text-align: left; /* Ensure all text is left-aligned on desktop */
-    }
-
-    /* Responsive adjustments for admin inputs (Desktop) */
-    .admin-input {
-        width: auto; /* Revert to auto width on larger screens for better alignment */
-        display: inline-block; /* Allow them to align side-by-side with label potentially */
-        margin: 0 0.5rem; /* Adjust margin for inline display */
-    }
-
-    #army-edit-form label {
-        display: inline-block; /* Make labels inline for desktop */
-        width: 150px; /* Give labels a fixed width for alignment */
-        text-align: right;
-        margin-right: 1rem;
-    }
-
-    #army-edit-form p {
-        display: flex; /* Use flexbox for rows */
-        justify-content: center; /* Center the label-input pair */
+    .army-overview-controls {
+        display: flex;
+        justify-content: center;
         align-items: center;
-        margin-bottom: 1rem;
+        gap: 1rem;
     }
 
-    .section .controls .dropdown {
-        display: inline-block;
-        margin: 0;
+    .dropdown {
+        width: auto;
+        margin-top: 0;
     }
 }
