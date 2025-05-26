@@ -82,22 +82,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Auto-Refresh Logic ---
+    let currentAppVersion = '1.0.0'; // Default initial version (matches version.json)
+    const VERSION_CHECK_INTERVAL = 5000; // Check every 5 seconds (for development)
+
+    async function checkAppVersion() {
+        try {
+            const response = await fetch('data/version.json');
+            const data = await response.json();
+            const latestVersion = data.version;
+
+            if (latestVersion !== currentAppVersion) {
+                console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
+                alert("A new version of the Crusade Tracker is available! The page will now refresh."); // Optional alert
+                window.location.reload(true); // Force a hard reload from the server
+            }
+        } catch (error) {
+            console.error('Error checking app version:', error);
+        }
+    }
+
     // --- Main Application Initialization ---
     async function initializeCrusadeTracker() {
         console.log("Crusade Tracker Initialized!");
 
         try {
-            const [factionsRes, armiesRes, planetsRes] = await Promise.all([
+            const [factionsRes, armiesRes, planetsRes, versionRes] = await Promise.all([
                 fetch('data/factions.json'),
                 fetch('data/armies.json'),
-                fetch('data/planets.json')
+                fetch('data/planets.json'),
+                fetch('data/version.json') // Fetch version.json on initial load
             ]);
 
             factionsData = await factionsRes.json();
             armiesData = await armiesRes.json();
             planetsData = await planetsRes.json();
+            currentAppVersion = (await versionRes.json()).version; // Set initial version
 
-            console.log('Data loaded:', { factionsData, armiesData, planetsData });
+            console.log('Data loaded:', { factionsData, armiesData, planetsData, currentAppVersion });
 
             // Initial render of components
             renderFactionChart(factionsData, armiesData);
@@ -106,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Set up hash-based routing
             window.addEventListener('hashchange', router);
             router(); // Call router once on load to handle initial URL
+
+            // Start periodic version check
+            setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 
         } catch (error) {
             console.error('Error loading data:', error);
