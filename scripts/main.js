@@ -1,119 +1,355 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Global Data Variables (Accessible to all functions below) ---
-    // Declared here so they are accessible to showPlanetDetail, showAllPlanets, etc.
     let factionsData = [];
-    let armiesData = [];
+    let armiesData = []; // This will now be populated from Firestore
     let planetsData = [];
 
-    // --- Password Protection ---
-    const passwordOverlay = document.getElementById('password-overlay');
-    const passwordInput = document.getElementById('password-input');
-    const passwordSubmit = document.getElementById('password-submit');
+    // --- DOM Elements for Sections (only relevant for index.html) ---
+    // Removed passwordOverlay, passwordInput, passwordSubmit as they are no longer used for main page
     const mainContent = document.getElementById('main-content');
+    const factionProgressSection = document.getElementById('faction-progress-section');
+    const armyRosterSection = document.getElementById('army-roster-section');
+    const planetaryControlSection = document.getElementById('planetary-control-section');
+    const resourcesSection = document.getElementById('resources-section');
 
-    // IMPORTANT: This is a client-side password and is NOT secure.
-    // Anyone can view the source code to find it.
-    // Use this only for casual privacy, not for sensitive data.
-    const CORRECT_PASSWORD = "crusade"; // <-- CHANGE THIS TO YOUR DESIRED PASSWORD!
+    const armyListOverview = document.getElementById('army-list-overview');
+    const armyDetailPageContainer = document.getElementById('army-detail-page-container');
+    const armyDetailContent = document.getElementById('army-detail-content');
+    const backToRosterBtn = document.getElementById('back-to-roster-btn');
 
-    passwordSubmit.addEventListener('click', checkPassword);
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            checkPassword();
+    // --- Faction Filter Elements (only relevant for index.html) ---
+    const factionFilterDropdown = document.getElementById('faction-filter');
+
+    // --- Firebase Variables ---
+    let db; // Firestore instance
+    let auth; // Auth instance
+    let userId = null; // Current user ID
+    let isAuthReady = false; // Flag to ensure Firestore operations happen after auth
+
+    // Reference to Firebase modules and global variables exposed by the HTML script
+    const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } = window.firebase;
+    const appId = window.__app_id;
+    const firebaseConfig = window.__firebase_config;
+    const initialAuthToken = window.__initial_auth_token;
+
+    // --- Firebase Initialization and Authentication ---
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            userId = user.uid;
+            console.log("Main: Authenticated with user ID:", userId);
+            isAuthReady = true;
+            // Once authenticated, proceed with loading data
+            initializeCrusadeTracker();
+        } else {
+            // User is signed out, or not yet signed in. Sign in anonymously if no custom token.
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Main: Signed in with custom token.");
+                } catch (error) {
+                    console.error("Main: Error signing in with custom token:", error);
+                    // Do not use alert here to avoid blocking public page
+                    console.error("Authentication failed. Check console for details.");
+                }
+            } else {
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Main: Signed in anonymously.");
+                } catch (error) {
+                    console.error("Main: Error signing in anonymously:", error);
+                    // Do not use alert here
+                    console.error("Anonymous authentication failed. Check console for details.");
+                }
+            }
         }
     });
 
-    function checkPassword() {
-        if (passwordInput.value === CORRECT_PASSWORD) {
-            passwordOverlay.classList.add('hidden');
-            mainContent.style.display = 'block'; // Show the main content
-            initializeCrusadeTracker(); // Initialize the rest of the app
-        } else {
-            alert("Incorrect password. Access denied."); // Using alert for simplicity, but for production, use a custom modal.
-            passwordInput.value = ''; // Clear input
+
+    // --- Public Access: Always show main content ---
+    // The passwordOverlay is now always hidden by default in index.html,
+    // and mainContent is always displayed.
+    // Removed password-related DOM elements and logic from here.
+
+
+    // --- Helper for generating consistent colors for armies ---
+    const colors = [
+        '#FF6384', // Red
+        '#36A2EB', // Blue
+        '#FFCE56', // Yellow
+        '#4BC0C0', // Teal
+        '#9966FF', // Purple
+        '#FF9F40', // Orange
+        '#C9CBCF', // Grey
+        '#6A8B82', // Green-Grey
+        '#E6B0AA', // Light Brown
+        '#D2B4DE', // Lavender
+        '#A9CCE3', // Light Blue
+        '#FADBD8'  // Light Pink
+    ];
+    let colorIndex = 0;
+    function getNextColor() {
+        const color = colors[colorIndex % colors.length];
+        colorIndex++;
+        return color;
+    }
+
+    // --- Router Function (only for internal index.html views) ---
+    function router() {
+        const hash = window.location.hash;
+        console.log('Current hash:', hash);
+
+        if (factionProgressSection && armyRosterSection && planetaryControlSection && resourcesSection) {
+            factionProgressSection.classList.add('hidden');
+            armyRosterSection.classList.add('hidden');
+            planetaryControlSection.classList.add('hidden');
+            resourcesSection.classList.add('hidden');
+
+            armyListOverview.classList.remove('hidden');
+            armyDetailPageContainer.classList.add('hidden');
+            armyDetailContent.innerHTML = '';
+
+            if (hash.startsWith('#army-')) {
+                const armyId = hash.substring(6);
+                renderArmyDetailPage(armyId);
+                armyRosterSection.classList.remove('hidden');
+            } else {
+                factionProgressSection.classList.remove('hidden');
+                armyRosterSection.classList.remove('hidden');
+                planetaryControlSection.classList.remove('hidden');
+                resourcesSection.classList.remove('hidden');
+                filterArmies(factionFilterDropdown.value);
+            }
         }
     }
 
-    // --- Main Application Initialization ---
-    // This function runs ONLY after the correct password is entered.
+    // --- Auto-Refresh Logic ---
+    let currentAppVersion = '1.0.0';
+    const VERSION_CHECK_INTERVAL = 5000;
+
+    async function checkAppVersion() {
+        try {
+            const response = await fetch(`data/version.json?t=${new Date().getTime()}`);
+            const data = await response.json();
+            const latestVersion = data.version;
+
+            if (latestVersion !== currentAppVersion) {
+                console.log(`New version detected! Old: ${currentAppVersion}, New: ${latestVersion}. Reloading page...`);
+                // Use a non-blocking message for public page
+                setTimeout(() => {
+                    alert("A new version of the Crusade Tracker is available! The page will now refresh.");
+                    window.location.reload(true);
+                }, 100); // Small delay to ensure message is seen
+            }
+        } catch (error) {
+            console.error('Error checking app version:', error);
+        }
+    }
+
+    // --- Main Application Initialization (only for index.html) ---
     async function initializeCrusadeTracker() {
         console.log("Crusade Tracker Initialized!");
 
+        if (!isAuthReady) {
+            console.log("Main: Authentication not ready, retrying initializeCrusadeTracker...");
+            return;
+        }
+
         try {
-            const [factionsRes, armiesRes, planetsRes] = await Promise.all([
+            // Fetch static data first
+            const [factionsRes, planetsRes, versionRes] = await Promise.all([
                 fetch('data/factions.json'),
-                fetch('data/armies.json'),
-                fetch('data/planets.json')
+                fetch('data/planets.json'),
+                fetch('data/version.json')
             ]);
 
-            // Assign to the already declared variables
             factionsData = await factionsRes.json();
-            armiesData = await armiesRes.json();
             planetsData = await planetsRes.json();
+            currentAppVersion = (await versionRes.json()).version;
 
-            console.log('Data loaded:', { factionsData, armiesData, planetsData });
+            // Now, set up real-time listener for armies from Firestore
+            const armiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/armies`);
+            onSnapshot(armiesCollectionRef, (snapshot) => {
+                armiesData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                console.log('Main: Armies data updated from Firestore.', armiesData);
 
-            // --- Render Components ---
-            renderFactionChart(factionsData);
-            renderArmyList(armiesData);
-            renderPlanets(planetsData); // Initial render of all planets
-            setupArmyOverview(armiesData);
+                // Re-render components that depend on armiesData
+                populateFactionFilter(factionsData);
+                renderFactionChart(factionsData, armiesData);
+                renderPlanets(planetsData);
+                router();
+            }, (error) => {
+                console.error('Main: Error listening to armies data from Firestore:', error);
+                if (mainContent) {
+                    mainContent.innerHTML = `<p style="color: white; text-align: center;">
+                                                Failed to load army data from database. Check console for details.
+                                            </p>`;
+                }
+            });
+
+            // Set up hash-based routing
+            window.addEventListener('hashchange', router);
+
+            // Set up filter event listener
+            if (factionFilterDropdown) {
+                factionFilterDropdown.addEventListener('change', (event) => {
+                    filterArmies(event.target.value);
+                });
+            }
+
+            if (backToRosterBtn) {
+                backToRosterBtn.addEventListener('click', () => {
+                    window.location.hash = '';
+                });
+            }
+
+            // Start periodic version check
+            setInterval(checkAppVersion, VERSION_CHECK_INTERVAL);
 
         } catch (error) {
-            console.error('Error loading data:', error);
-            // Display a user-friendly error message on the page
-            mainContent.innerHTML = `<p style="color: red; text-align: center;">
-                                        Failed to load campaign data. Please check the data files and try again.
-                                    </p>`;
+            console.error('Error loading static data or setting up Firestore listener:', error);
+            if (mainContent) {
+                mainContent.innerHTML = `<p style="color: white; text-align: center;">
+                                            Failed to load campaign data. Please check the data files and database connection.
+                                        </p>`;
+            }
         }
     }
 
-    // --- Faction Progress Bar Graph ---
-    function renderFactionChart(factions) {
-        const ctx = document.getElementById('factionBarChart').getContext('2d');
-        const factionNames = factions.map(f => f.name);
-        const factionScores = factions.map(f => f.score);
-        const factionColors = factions.map(f => f.color);
+    // --- Faction Filter Logic ---
+    function populateFactionFilter(factions) {
+        if (!factionFilterDropdown) return; // Ensure dropdown exists
+        factionFilterDropdown.innerHTML = '<option value="all">All Factions</option>';
+        factions.forEach(faction => {
+            const option = document.createElement('option');
+            option.value = faction.name;
+            option.textContent = faction.name;
+            factionFilterDropdown.appendChild(option);
+        });
+    }
+
+    function filterArmies(selectedFaction) {
+        let filtered = armiesData;
+        if (selectedFaction !== 'all') {
+            filtered = armiesData.filter(army => army.faction === selectedFaction);
+        }
+        renderArmyListOverview(filtered);
+    }
+
+
+    // --- Faction Progress Stacked Bar Graph ---
+    function renderFactionChart(factions, armies) {
+        const ctx = document.getElementById('factionBarChart');
+        if (!ctx) return;
+
+        const factionLabels = factions.map(f => f.name);
+        const factionIndexMap = new Map(factionLabels.map((name, index) => [name, index]));
+
+        const datasets = [];
+        const armyColors = new Map();
+
+        armies.forEach(army => {
+            if (!armyColors.has(army.id)) {
+                armyColors.set(army.id, getNextColor());
+            }
+            const armyColor = armyColors.get(army.id);
+
+            const data = new Array(factionLabels.length).fill(0);
+            const factionIndex = factionIndexMap.get(army.faction);
+            if (factionIndex !== undefined) {
+                data[factionIndex] = army.crusade_points;
+            }
+
+            datasets.push({
+                label: army.name,
+                data: data,
+                backgroundColor: armyColor,
+                borderColor: 'rgba(255, 255, 255, 0.6)',
+                borderWidth: 1
+            });
+        });
+
+        if (Chart.getChart(ctx)) {
+            Chart.getChart(ctx).destroy();
+        }
 
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: factionNames,
-                datasets: [{
-                    label: 'Crusade Score',
-                    data: factionScores,
-                    backgroundColor: factionColors.map(color => `${color}B3`), // 70% opacity
-                    borderColor: factionColors,
-                    borderWidth: 1
-                }]
+                labels: factionLabels,
+                datasets: datasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 150, // Adjust max score as needed for your campaign
+                    x: {
+                        stacked: true,
                         ticks: {
-                            color: '#e0e0e0' // Y-axis label color
+                            color: 'white'
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' // Grid line color
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     },
-                    x: {
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        max: 400,
                         ticks: {
-                            color: '#e0e0e0' // X-axis label color
+                            color: 'white'
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' // Grid line color
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     }
                 },
                 plugins: {
                     legend: {
+                        position: 'bottom',
                         labels: {
-                            color: '#e0e0e0' // Legend text color
+                            color: 'white',
+                            boxWidth: 20,
+                            padding: 10
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        borderColor: 'white',
+                        borderWidth: 1,
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        callbacks: {
+                            title: function(context) {
+                                if (context.length > 0) {
+                                    return context[0].label;
+                                }
+                                return '';
+                            },
+                            label: function(context) {
+                                const hoveredFaction = context.label;
+                                const armyName = context.dataset.label;
+                                const army = armies.find(a => a.name === armyName && a.faction === hoveredFaction);
+                                if (army) {
+                                    return `${army.name}: ${army.crusade_points} Crusade Points`;
+                                }
+                                return '';
+                            },
+                            filter: function(tooltipItem) {
+                                const hoveredFaction = tooltipItem.label;
+                                const armyName = tooltipItem.dataset.label;
+                                const army = armies.find(a => a.name === armyName && a.faction === hoveredFaction);
+                                return !!army;
+                            }
                         }
                     }
                 }
@@ -121,36 +357,82 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Participating Armies List ---
-    function renderArmyList(armies) {
-        const armyListContainer = document.getElementById('army-list');
-        armyListContainer.innerHTML = ''; // Clear previous content
+    // --- Army List Overview (main page) ---
+    function renderArmyListOverview(armiesToRender) {
+        if (!armyListOverview) return;
 
-        armies.forEach(army => {
+        armyListOverview.innerHTML = '';
+        armyListOverview.classList.remove('hidden');
+        armyDetailPageContainer.classList.add('hidden');
+        armyDetailContent.innerHTML = '';
+
+        if (armiesToRender.length === 0) {
+            armyListOverview.innerHTML = '<p style="text-align: center; color: white;">No armies found for this filter.</p>';
+            return;
+        }
+
+        armiesToRender.forEach(army => {
             const armyCard = document.createElement('div');
             armyCard.classList.add('army-card');
+            armyCard.dataset.armyId = army.id;
+
             armyCard.innerHTML = `
-                <h3>${army.name}</h3>
+                <div class="army-card-header">
+                    <h3>${army.name}</h3>
+                </div>
                 <p><strong>Faction:</strong> ${army.faction}</p>
-                <p>${army.description.substring(0, 150)}...</p>
-                <p><strong>Player:</strong> ${army.player}</p>
+                <p>${army.description ? army.description.substring(0, 100) + '...' : 'No description.'}</p>
+                <button class="view-button" data-army-id="${army.id}">View Details</button>
             `;
-            armyListContainer.appendChild(armyCard);
+            armyCard.querySelector('.view-button').addEventListener('click', (e) => {
+                const armyId = e.target.dataset.armyId;
+                window.location.hash = `#army-${armyId}`;
+            });
+            armyListOverview.appendChild(armyCard);
         });
     }
 
-    // --- Planetary Control (Planets & Ships) ---
+    // --- Army Detail Page ---
+    function renderArmyDetailPage(armyId) {
+        if (!armyDetailContent || !armyListOverview || !armyDetailPageContainer) return;
+
+        const army = armiesData.find(a => a.id === armyId);
+        if (!army) {
+            armyDetailContent.innerHTML = `<p style="color: white;">Army not found!</p>`;
+            return;
+        }
+
+        armyListOverview.classList.add('hidden');
+        armyDetailPageContainer.classList.remove('hidden');
+
+        armyDetailContent.innerHTML = `
+            <h3>${army.name}</h3>
+            <p><strong>Player:</strong> ${army.player}</p>
+            <p><strong>Faction:</strong> ${army.faction}</p>
+            <p><strong>Description:</strong> ${army.description || 'N/A'}</p>
+            <p><strong>Crusade Points:</strong> ${army.crusade_points}</p>
+            <p><strong>Battles Played:</strong> ${army.battles_played}</p>
+            <p><strong>Victories:</strong> ${army.victories}</p>
+            <p><strong>Notes:</strong> ${army.notes || 'N/A'}</p>
+        `;
+
+        document.getElementById('back-to-roster-btn').classList.remove('hidden');
+    }
+
+
+    // --- Planetary Control (Planets) ---
     const planetsContainer = document.getElementById('planets-container');
-    let currentActivePlanetId = null; // To track which planet is in detail view
+    let currentActivePlanetId = null;
 
     function renderPlanets(planets) {
-        planetsContainer.innerHTML = ''; // Clear previous content
-        planetsContainer.classList.remove('single-view'); // Ensure not in single view initially
+        if (!planetsContainer) return;
 
-        // Create and append the back button at the top of the container
+        planetsContainer.innerHTML = '';
+        planetsContainer.classList.remove('single-view');
+
         const backButton = document.createElement('button');
         backButton.id = 'back-to-planets-btn';
-        backButton.classList.add('button', 'back-button', 'hidden'); // Hidden by default
+        backButton.classList.add('button', 'back-button', 'hidden');
         backButton.textContent = 'Back to All Planets';
         backButton.addEventListener('click', showAllPlanets);
         planetsContainer.appendChild(backButton);
@@ -158,37 +440,47 @@ document.addEventListener('DOMContentLoaded', () => {
         planets.forEach(planet => {
             const planetCard = document.createElement('div');
             planetCard.classList.add('planet-card');
-            planetCard.dataset.planetId = planet.id; // Store planet ID for click handling
+            planetCard.dataset.planetId = planet.id;
 
             const planetImageContainer = document.createElement('div');
             planetImageContainer.classList.add('planet-image-container');
 
             const planetImage = document.createElement('img');
             planetImage.classList.add('planet-image');
-            planetImage.src = planet.image || `images/planet1.png`; // Placeholder if image not found
+            planetImage.src = planet.image || `images/planet1.png`;
             planetImage.alt = planet.name;
 
-            // Percentage Overlay - Opacity adjusted in CSS for more planet visibility
-            const totalPercentage = planet.factions_control.reduce((sum, fc) => sum + fc.percentage, 0);
+            const totalFactionPercentage = planet.army_control.reduce((sum, ac) => sum + ac.percentage, 0);
             let currentHeight = 0;
-            planet.factions_control.forEach(fc => {
-                const segmentHeight = (fc.percentage / totalPercentage) * 100; // Calculate segment height relative to 100%
-                const segmentDiv = document.createElement('div');
-                segmentDiv.classList.add('planet-overlay-segment');
-                segmentDiv.style.height = `${segmentHeight}%`;
-                segmentDiv.style.backgroundColor = `${fc.color}CC`; // Add some transparency
-                segmentDiv.style.bottom = `${currentHeight}%`; // Stack segments from the bottom
-                planetImageContainer.appendChild(segmentDiv);
-                currentHeight += segmentHeight;
+            const factionAggregatedControl = {};
+            planet.army_control.forEach(ac => {
+                const army = armiesData.find(a => a.id === ac.army_id);
+                if (army) {
+                    factionAggregatedControl[army.faction] = (factionAggregatedControl[army.faction] || 0) + ac.percentage;
+                }
             });
 
-            // Add a base overlay for the rest of the planet if total is less than 100%
-            if (totalPercentage < 100) {
-                const remainingHeight = 100 - totalPercentage;
+            const sortedFactions = Object.keys(factionAggregatedControl).sort();
+            sortedFactions.forEach(factionName => {
+                const percentage = factionAggregatedControl[factionName];
+                const faction = factionsData.find(f => f.name === factionName);
+                const color = faction ? `rgba(57, 255, 20, ${0.5 + (factionsData.indexOf(faction) * 0.1)})` : 'rgba(128, 128, 128, 0.5)';
+
+                const segmentDiv = document.createElement('div');
+                segmentDiv.classList.add('planet-overlay-segment');
+                segmentDiv.style.height = `${(percentage / totalFactionPercentage) * 100}%`;
+                segmentDiv.style.backgroundColor = color;
+                segmentDiv.style.bottom = `${currentHeight}%`;
+                planetImageContainer.appendChild(segmentDiv);
+                currentHeight += (percentage / totalFactionPercentage) * 100;
+            });
+
+            if (totalFactionPercentage < 100) {
+                const remainingHeight = 100 - totalFactionPercentage;
                 const baseOverlay = document.createElement('div');
                 baseOverlay.classList.add('planet-overlay-segment');
                 baseOverlay.style.height = `${remainingHeight}%`;
-                baseOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'; // Faint dark overlay for uncontrolled parts
+                baseOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
                 baseOverlay.style.bottom = `${currentHeight}%`;
                 planetImageContainer.appendChild(baseOverlay);
             }
@@ -196,187 +488,100 @@ document.addEventListener('DOMContentLoaded', () => {
             planetImageContainer.appendChild(planetImage);
             planetCard.appendChild(planetImageContainer);
 
-            // Short info for initial all-planets view (always visible now)
             const planetInfoShort = document.createElement('div');
-            planetInfoShort.classList.add('planet-info-short'); // Renamed class for clarity
+            planetInfoShort.classList.add('planet-info-short');
             planetInfoShort.innerHTML = `
                 <h3>${planet.name}</h3>
-                <p>${planet.description.substring(0, 50)}...</p>
+                <p>${planet.description ? planet.description.substring(0, 50) + '...' : 'No description.'}</p>
             `;
             planetCard.appendChild(planetInfoShort);
 
-            // Ship Image - Position controlled by 'ship_location' in planets.json
-            // To adjust ship position:
-            // 1. Open data/planets.json
-            // 2. Find the planet the ship is associated with.
-            // 3. Update "ship_location": "planet_id" to the ID of the planet you want the ship to appear next to.
-            //    Set to null to make it appear next to its own planet card (default top-right corner).
-            // 4. Update "ship_reason": "Your battle description here."
-            // 5. Save, commit, and push changes to GitHub.
-            const shipImage = document.createElement('img');
-            shipImage.classList.add('ship-image');
-            shipImage.src = 'images/ship.png'; // Replace with your ship image path
-            shipImage.alt = 'Crusade Ship';
-            shipImage.id = `ship-${planet.id}`; // Unique ID for each ship instance
-
-            // Determine where the ship should be placed
-            if (planet.ship_location) {
-                // Find the target planet card to append the ship to
-                // Note: This query needs to be done *after* all planet cards are rendered
-                // For initial render, we'll place it on its own card and then re-position if needed by showPlanetDetail
-                planetCard.appendChild(shipImage); // Temporarily add to its own card
-            } else {
-                // Default position if not linked to another planet
-                planetCard.appendChild(shipImage);
-            }
-
-            // Container for detailed info (initially hidden)
             const planetDetailContentInCard = document.createElement('div');
             planetDetailContentInCard.classList.add('planet-detail-content-in-card');
             planetCard.appendChild(planetDetailContentInCard);
 
-
-            // Add click listener for detailed view
             planetCard.addEventListener('click', () => {
                 if (currentActivePlanetId === planet.id) {
-                    showAllPlanets(); // If clicking the active planet, go back to all planets
+                    showAllPlanets();
                 } else {
-                    showPlanetDetail(planet.id); // Otherwise, show this planet's detail
+                    showPlanetDetail(planet.id);
                 }
             });
 
             planetsContainer.appendChild(planetCard);
         });
-
-        // After all planets are rendered, re-position ships based on ship_location
-        planets.forEach(planet => {
-            if (planet.ship_location && planet.ship_location !== planet.id) {
-                const shipElement = document.getElementById(`ship-${planet.id}`);
-                const targetPlanetCard = document.querySelector(`.planet-card[data-planet-id="${planet.ship_location}"]`);
-                if (shipElement && targetPlanetCard) {
-                    targetPlanetCard.appendChild(shipElement);
-                    shipElement.style.position = 'absolute';
-                    shipElement.style.top = '10px';
-                    shipElement.style.right = '10px';
-                }
-            }
-        });
     }
 
     function showPlanetDetail(planetId) {
+        if (!planetsContainer) return;
+
         const selectedPlanet = planetsData.find(p => p.id === planetId);
         if (!selectedPlanet) return;
 
-        currentActivePlanetId = planetId; // Set the active planet
+        currentActivePlanetId = planetId;
 
-        // Hide back button initially, will be shown by CSS
         document.getElementById('back-to-planets-btn').classList.remove('hidden');
 
-        planetsContainer.classList.add('single-view'); // Add class to container for CSS effects
+        planetsContainer.classList.add('single-view');
 
         document.querySelectorAll('.planet-card').forEach(card => {
             const cardId = card.dataset.planetId;
-            const shipElement = card.querySelector('.ship-image'); // Get ship for this card
 
             if (cardId !== planetId) {
                 card.classList.add('inactive');
-                // If a ship is on an inactive card, ensure it also fades
-                if (shipElement) {
-                    shipElement.classList.add('inactive');
-                }
             } else {
                 card.classList.remove('inactive');
-                card.classList.add('active'); // Highlight the active planet
-                // Ensure active ship is visible
-                if (shipElement) {
-                    shipElement.classList.remove('inactive');
-                }
+                card.classList.add('active');
 
-                // Populate detailed view within this active card
                 const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
                 const shortInfoDiv = card.querySelector('.planet-info-short');
 
-                // Hide short info and show detailed info
                 if (shortInfoDiv) shortInfoDiv.classList.add('hidden');
                 if (detailContentDiv) detailContentDiv.classList.remove('hidden');
 
+                const armyControlHtml = selectedPlanet.army_control.map(ac => {
+                    const army = armiesData.find(a => a.id === ac.army_id);
+                    return army ? `<p style="color:var(--auspex-green-light);"><strong>${army.name}:</strong> ${ac.percentage}%</p>` : '';
+                }).join('');
+
+                const battleInfoHtml = selectedPlanet.battle_reason ? `
+                    <div class="battle-info">
+                        <h4>Current Battle:</h4>
+                        <p>${selectedPlanet.battle_reason}</p>
+                    </div>
+                ` : '';
+
                 detailContentDiv.innerHTML = `
                     <h3>${selectedPlanet.name}</h3>
-                    <p>${selectedPlanet.description}</p>
+                    <p>${selectedPlanet.description || 'N/A'}</p>
                     <div class="control-info">
-                        <h4>Current Control:</h4>
-                        ${selectedPlanet.factions_control.map(fc => `<p style="color:${fc.color};"><strong>${fc.faction}:</strong> ${fc.percentage}%</p>`).join('')}
+                        <h4>Army Control:</h4>
+                        ${armyControlHtml}
                     </div>
-                    ${selectedPlanet.ship_reason ? `
-                        <div class="battle-info">
-                            <h4>Current Battle:</h4>
-                            <p>${selectedPlanet.ship_reason}</p>
-                        </div>
-                    ` : ''}
+                    ${battleInfoHtml}
                 `;
             }
         });
     }
 
     function showAllPlanets() {
-        currentActivePlanetId = null; // Clear active planet
+        if (!planetsContainer) return;
 
-        document.getElementById('back-to-planets-btn').classList.add('hidden'); // Hide back button
+        currentActivePlanetId = null;
 
-        planetsContainer.classList.remove('single-view'); // Remove single view class
+        document.getElementById('back-to-planets-btn').classList.add('hidden');
+
+        planetsContainer.classList.remove('single-view');
 
         document.querySelectorAll('.planet-card').forEach(card => {
-            card.classList.remove('inactive', 'active'); // Remove active/inactive classes
-            const shipElement = card.querySelector('.ship-image');
-            if (shipElement) {
-                shipElement.classList.remove('inactive'); // Ensure all ships are visible
-            }
+            card.classList.remove('inactive', 'active');
 
-            // Restore short info and hide detailed info
             const shortInfoDiv = card.querySelector('.planet-info-short');
             const detailContentDiv = card.querySelector('.planet-detail-content-in-card');
             if (shortInfoDiv) shortInfoDiv.classList.remove('hidden');
             if (detailContentDiv) {
                 detailContentDiv.classList.add('hidden');
-                detailContentDiv.innerHTML = ''; // Clear content
-            }
-        });
-    }
-
-
-    // --- Army Roster Overview with Dropdown ---
-    function setupArmyOverview(armies) {
-        const armySelect = document.getElementById('army-select');
-        const selectedArmyDetails = document.getElementById('selected-army-details');
-
-        // Populate dropdown
-        armies.forEach(army => {
-            const option = document.createElement('option');
-            option.value = army.id;
-            option.textContent = army.name;
-            armySelect.appendChild(option);
-        });
-
-        // Event listener for dropdown change
-        armySelect.addEventListener('change', (e) => {
-            const selectedArmyId = e.target.value;
-            if (selectedArmyId) {
-                const army = armies.find(a => a.id === selectedArmyId);
-                if (army) {
-                    selectedArmyDetails.innerHTML = `
-                        <h3>${army.name}</h3>
-                        <p><strong>Player:</strong> ${army.player}</p>
-                        <p><strong>Faction:</strong> ${army.faction}</p>
-                        <p><strong>Description:</strong> ${army.description}</p>
-                        <p><strong>Crusade Points:</strong> ${army.crusade_points}</p>
-                        <p><strong>Battles Played:</strong> ${army.battles_played}</p>
-                        <p><strong>Victories:</strong> ${army.victories}</p>
-                        <p><strong>Notes:</strong> ${army.notes || 'N/A'}</p>
-                    `;
-                    selectedArmyDetails.classList.remove('hidden');
-                }
-            } else {
-                selectedArmyDetails.classList.add('hidden');
+                detailContentDiv.innerHTML = '';
             }
         });
     }

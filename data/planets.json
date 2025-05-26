@@ -8,8 +8,8 @@
       { "faction": "Imperium", "percentage": 70, "color": "#4A90E2" },
       { "faction": "Chaos", "percentage": 30, "color": "#D0021B" }
     ],
-    "ship_location": "planet1",
-    "ship_reason": "Imperial forces are engaging Chaos cults to secure mining operations."
+    "fighting_army_id": "ultramarines",
+    "battle_reason": "Ultramarines are engaging Chaos cults to secure mining operations."
   },
   {
     "id": "planet2",
@@ -20,8 +20,8 @@
       { "faction": "Orks", "percentage": 50, "color": "#7ED321" },
       { "faction": "Death Guard", "percentage": 50, "color": "#D0021B" }
     ],
-    "ship_location": "planet2",
-    "ship_reason": "Ork Speedwaaagh! clashes with Death Guard over ancient xenos tech."
+    "fighting_army_id": "ork-speedwaaagh",
+    "battle_reason": "Ork Speedwaaagh! clashes with Death Guard over ancient xenos tech."
   },
   {
     "id": "planet3",
@@ -32,7 +32,31 @@
       { "faction": "Aeldari", "percentage": 40, "color": "#F5A623" },
       { "faction": "Imperium", "percentage": 60, "color": "#4A90E2" }
     ],
-    "ship_location": null,
-    "ship_reason": null
+    "fighting_army_id": "tyranids",
+    "battle_reason": "Tyranid vanguard fleet has begun consuming biomass on the agri-world."
+  },
+  {
+    "id": "planet4",
+    "name": "Forge World Cygnus",
+    "description": "A vital industrial world, churning out weapons and vehicles for the Imperium. Its factories are under constant threat from various xenos and chaos incursions.",
+    "image": "images/planet4.png",
+    "factions_control": [
+      { "faction": "Imperium", "percentage": 80, "color": "#4A90E2" },
+      { "faction": "Necrons", "percentage": 20, "color": "#00FFFF" }
+    ],
+    "fighting_army_id": "necrons",
+    "battle_reason": "Necron forces are attempting to breach the main forge complex."
+  },
+  {
+    "id": "planet5",
+    "name": "Shadowfen",
+    "description": "A desolate, swampy world, known for its hidden ancient ruins and dangerous wildlife. It's a strategic choke point for interstellar travel.",
+    "image": "images/planet5.png",
+    "factions_control": [
+      { "faction": "Chaos", "percentage": 60, "color": "#D0021B" },
+      { "faction": "T'au", "percentage": 40, "color": "#FF4500" }
+    ],
+    "fighting_army_id": "chaos-space-marines",
+    "battle_reason": "Chaos Space Marines are fortifying positions against T'au incursions."
   }
 ]

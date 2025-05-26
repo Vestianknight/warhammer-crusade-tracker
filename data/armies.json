@@ -8,7 +8,8 @@
     "crusade_points": 100,
     "battles_played": 5,
     "victories": 3,
-    "notes": "Currently focused on securing vital supply lines on Terra Nova."
+    "notes": "Currently focused on securing vital supply lines on Terra Nova.",
+    "ship_image": "images/ship1.png"
   },
   {
     "id": "ork-speedwaaagh",
@@ -19,7 +20,8 @@
     "crusade_points": 95,
     "battles_played": 6,
     "victories": 4,
-    "notes": "Recently acquired new 'shoota' vehicles, looking for a good fight."
+    "notes": "Recently acquired new 'shoota' vehicles, looking for a good fight.",
+    "ship_image": "images/ship2.png"
   },
   {
     "id": "death-guard",
@@ -30,7 +32,8 @@
     "crusade_points": 110,
     "battles_played": 5,
     "victories": 3,
-    "notes": "Consolidating gains on Xylos Prime, preparing for a major offensive."
+    "notes": "Consolidating gains on Xylos Prime, preparing for a major offensive.",
+    "ship_image": "images/ship3.png"
   },
   {
     "id": "craftworld-iyanden",
@@ -41,7 +44,8 @@
     "crusade_points": 85,
     "battles_played": 4,
     "victories": 2,
-    "notes": "Seeking ancient artifacts on the fringe of the campaign zone."
+    "notes": "Seeking ancient artifacts on the fringe of the campaign zone.",
+    "ship_image": "images/ship4.png"
   },
   {
     "id": "adeptus-custodes",
@@ -52,7 +56,8 @@
     "crusade_points": 120,
     "battles_played": 3,
     "victories": 3,
-    "notes": "Deployed to secure a vital Imperial relic, their presence alone inspires awe."
+    "notes": "Deployed to secure a vital Imperial relic, their presence alone inspires awe.",
+    "ship_image": "images/ship5.png"
   },
   {
     "id": "tyranids",
@@ -63,7 +68,8 @@
     "crusade_points": 105,
     "battles_played": 5,
     "victories": 3,
-    "notes": "A vanguard fleet has been detected, consuming outer system worlds rapidly."
+    "notes": "A vanguard fleet has been detected, consuming outer system worlds rapidly.",
+    "ship_image": "images/ship6.png"
   },
   {
     "id": "astra-militarum",
@@ -74,7 +80,8 @@
     "crusade_points": 90,
     "battles_played": 7,
     "victories": 4,
-    "notes": "Holding the line against encroaching xenos forces on the western front."
+    "notes": "Holding the line against encroaching xenos forces on the western front.",
+    "ship_image": "images/ship7.png"
   },
   {
     "id": "chaos-space-marines",
@@ -85,7 +92,8 @@
     "crusade_points": 115,
     "battles_played": 6,
     "victories": 4,
-    "notes": "Performing dark rituals to summon daemonic allies for the next assault."
+    "notes": "Performing dark rituals to summon daemonic allies for the next assault.",
+    "ship_image": "images/ship8.png"
   },
   {
     "id": "necrons",
@@ -96,7 +104,8 @@
     "crusade_points": 108,
     "battles_played": 4,
     "victories": 3,
-    "notes": "Tomb worlds are stirring, and strange energy readings emanate from deep space."
+    "notes": "Tomb worlds are stirring, and strange energy readings emanate from deep space.",
+    "ship_image": "images/ship9.png"
   },
   {
     "id": "tau-empire",
@@ -107,6 +116,7 @@
     "crusade_points": 98,
     "battles_played": 5,
     "victories": 3,
-    "notes": "Establishing new forward operating bases, seeking to integrate new species."
+    "notes": "Establishing new forward operating bases, seeking to integrate new species.",
+    "ship_image": "images/ship10.png"
   }
 ]
