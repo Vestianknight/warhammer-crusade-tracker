@@ -158,12 +158,12 @@ body {
     background-color: #164a80;
 }
 
-/* Army Card Header for logo placement */
+/* Army Card Header for ship image placement */
 .army-card-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* Space between title and logo */
+    gap: 10px; /* Space between title and ship image */
     margin-bottom: 1rem;
 }
 
@@ -171,8 +171,8 @@ body {
     margin: 0; /* Reset margin for h3 inside flex */
 }
 
-/* Army Logo in overview card */
-.army-card-ship-image { /* Renamed for clarity, it's the army's ship on the card */
+/* Army Ship Image in overview card */
+.army-card-ship-image {
     width: 40px; /* Smaller size for overview card */
     height: 40px;
     object-fit: contain; /* Ensure the whole ship is visible */
