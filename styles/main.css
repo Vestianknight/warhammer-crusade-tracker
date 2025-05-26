@@ -667,3 +667,91 @@ body {
         text-align: left; /* Ensure all text is left-aligned on desktop */
     }
 }
+/* --- New Admin Page Specific Styles --- */
+.admin-input {
+    width: calc(100% - 2rem); /* Full width minus padding */
+    max-width: 300px; /* Max width for larger screens */
+    padding: 0.8rem;
+    margin: 0.5rem auto; /* Center input and add vertical space */
+    border: 1px solid #0f3460;
+    border-radius: 5px;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 1rem;
+    display: block; /* Make it a block element to center with margin: auto */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* Specific styling for the army edit form container to look like a card */
+#army-edit-form {
+    background-color: #3e3e60; /* Similar to army cards */
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-top: 2rem;
+    text-align: center; /* Center content within the form */
+}
+
+#army-edit-form h3 {
+    color: #e94560;
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+#army-edit-form label {
+    display: block; /* Make labels block for better stacking */
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+}
+
+#army-edit-form p {
+    margin-bottom: 1rem; /* Space between input rows */
+}
+
+#army-edit-form p strong {
+    color: #e94560; /* Highlight army name */
+}
+
+/* Ensure controls within sections are centered */
+.section .controls {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Adjust dropdown width for admin page */
+.section .controls .dropdown {
+    margin: 0.5rem auto; /* Center the dropdown */
+    width: calc(100% - 2rem); /* Full width minus padding */
+    max-width: 400px; /* Slightly wider max-width for dropdown */
+    display: block;
+}
+
+/* Responsive adjustments for admin inputs */
+@media (min-width: 768px) {
+    .admin-input {
+        width: auto; /* Revert to auto width on larger screens for better alignment */
+        display: inline-block; /* Allow them to align side-by-side with label potentially */
+        margin: 0 0.5rem; /* Adjust margin for inline display */
+    }
+
+    #army-edit-form label {
+        display: inline-block; /* Make labels inline for desktop */
+        width: 150px; /* Give labels a fixed width for alignment */
+        text-align: right;
+        margin-right: 1rem;
+    }
+
+    #army-edit-form p {
+        display: flex; /* Use flexbox for rows */
+        justify-content: center; /* Center the label-input pair */
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .section .controls .dropdown {
+        display: inline-block;
+        margin: 0;
+    }
+}

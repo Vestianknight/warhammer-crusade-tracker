@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warhammer 40k Crusade Admin</title>
+    <base href="/warhammer-crusade-tracker/">
+
+    <link rel="stylesheet" href="styles/main.css"> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="password-overlay" class="password-overlay">
+        <div class="password-modal">
+            <h2>Admin Access Required</h2>
+            <p>Please enter the admin password:</p>
+            <input type="password" id="admin-password-input" placeholder="Enter password">
+            <button id="admin-password-submit">Enter</button>
+            <p id="password-error-message" class="password-warning hidden" style="color: #e94560;">
+                Incorrect password. Please try again.
+            </p>
+        </div>
+    </div>
+
+    <div id="admin-content" class="main-content hidden">
+        <header class="header">
+            <h1>Warhammer 40k Crusade: <span class="campaign-name">Admin Panel</span></h1>
+            <p class="intro-text">
+                Manage army data, crusade points, and more. Use with caution, commander.
+            </p>
+        </header>
+
+        <section id="army-management-section" class="section">
+            <h2>Army Management</h2>
+            <div class="controls">
+                <label for="admin-army-select">Select Army:</label>
+                <select id="admin-army-select" class="dropdown">
+                    <option value="">-- Select an Army --</option>
+                    </select>
+            </div>
+
+            <div id="army-edit-form" class="army-detail-page-container hidden">
+                <h3>Edit Army Details</h3>
+                <div id="edit-form-content">
+                    <p><strong>Army Name:</strong> <span id="edit-army-name"></span></p>
+                    <p>
+                        <label for="edit-crusade-points">Crusade Points:</label>
+                        <input type="number" id="edit-crusade-points" class="admin-input">
+                    </p>
+                    <p>
+                        <label for="edit-battles-played">Battles Played:</label>
+                        <input type="number" id="edit-battles-played" class="admin-input">
+                    </p>
+                    <p>
+                        <label for="edit-victories">Victories:</label>
+                        <input type="number" id="edit-victories" class="admin-input">
+                    </p>
+                    <button id="save-army-changes" class="button">Save Changes</button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2025 Warhammer 40k Crusade Tracker Admin. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="scripts/admin.js"></script>
+</body>
+</html>
