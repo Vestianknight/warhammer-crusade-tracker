@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // The 'save-army-changes' button functionality will be added later.
             // For now, it won't do anything.
+            // saveArmyChangesBtn.addEventListener('click', saveArmyChanges);
 
         } catch (error) {
             console.error('Error loading armies data for admin:', error);
@@ -98,4 +99,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial setup (show password overlay) ---
     // The password overlay is visible by default in HTML, so no action needed here.
     // The adminContent is hidden by default in HTML, so no action needed here.
+    // The main-content in index.html is controlled by a similar password overlay.
 });
